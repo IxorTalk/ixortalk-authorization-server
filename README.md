@@ -1,1 +1,1 @@
-# ixortalk-user-service
+# ixortalk-authorization-server
