@@ -53,7 +53,7 @@ public class AuthenticationSuccessEventListener implements ApplicationListener<A
         existingProfile
                 .filter(userProfile -> ixorTalkPrincipal.getLoginProvider() != userProfile.getLoginProvider())
                 .ifPresent(userProfile -> {
-                    throw new IllegalArgumentException("Different profile already exist for principal " + ixorTalkPrincipal.getName() + " (new: " + ixorTalkPrincipal.getLoginProvider() + " <--> old: " + userProfile.getLastName() + ")");
+                    throw new IllegalArgumentException("Different profile already exist for principal " + ixorTalkPrincipal.getName());
                 });
 
         if (!existingProfile.isPresent()) {
