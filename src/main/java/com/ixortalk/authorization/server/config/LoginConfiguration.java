@@ -24,21 +24,15 @@
 package com.ixortalk.authorization.server.config;
 
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
-import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
+import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 @Configuration
-@EnableResourceServer
-public class ResourceServer extends ResourceServerConfigurerAdapter {
+public class LoginConfiguration extends WebMvcConfigurerAdapter {
 
-    @Override
-    public void configure(HttpSecurity http) throws Exception {
-
-        // TODO #2 wj post for token after authorization code flow not working
-        http
-                .antMatcher("/user")
-                .authorizeRequests()
-                .anyRequest().authenticated();
-    }
+	@Override
+	public void addViewControllers(ViewControllerRegistry registry) {
+		registry.addViewController("/login").setViewName("thirdparty");
+		registry.addViewController("/oauth/confirm_access").setViewName("authorize");
+	}
 }
