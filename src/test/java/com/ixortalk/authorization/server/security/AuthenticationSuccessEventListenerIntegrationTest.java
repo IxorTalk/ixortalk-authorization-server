@@ -74,8 +74,8 @@ public class AuthenticationSuccessEventListenerIntegrationTest extends AbstractS
                         aUserProfile()
                                 .withName(PRINCIPAL_EMAIL)
                                 .withEmail(PRINCIPAL_EMAIL)
-                                .withFirstName(null)
-                                .withLastName(null)
+                                .withFirstName(FIRST_NAME)
+                                .withLastName(LAST_NAME)
                                 .withLoginProvider(INTERNAL)
                                 .build());
     }
@@ -87,8 +87,8 @@ public class AuthenticationSuccessEventListenerIntegrationTest extends AbstractS
                 aUserProfile()
                         .withName(PRINCIPAL_EMAIL)
                         .withEmail(PRINCIPAL_EMAIL)
-                        .withFirstName(null)
-                        .withLastName(null)
+                        .withFirstName(FIRST_NAME)
+                        .withLastName(LAST_NAME)
                         .withLoginProvider(INTERNAL)
                         .build());
 
@@ -104,8 +104,8 @@ public class AuthenticationSuccessEventListenerIntegrationTest extends AbstractS
                 aUserProfile()
                         .withName(PRINCIPAL_EMAIL)
                         .withEmail(PRINCIPAL_EMAIL)
-                        .withFirstName(null)
-                        .withLastName(null)
+                        .withFirstName(FIRST_NAME)
+                        .withLastName(LAST_NAME)
                         .withLoginProvider(EVENTBRITE)
                         .build());
 

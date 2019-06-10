@@ -50,9 +50,6 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @RunWith(SpringRunner.class)
 public abstract class AbstractSpringIntegrationTest {
 
-    @Rule
-    public WireMockRule thirdPartyWireMockRule = new WireMockRule(65002);
-
     @Inject
     private CrudRepository<?, ?>[] crudRepositories;
 
