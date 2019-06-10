@@ -34,8 +34,6 @@ public class ResourceServer extends ResourceServerConfigurerAdapter {
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
-
-        // TODO #2 wj post for token after authorization code flow not working
         http
                 .antMatcher("/user")
                 .authorizeRequests()
