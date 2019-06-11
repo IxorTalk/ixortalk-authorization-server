@@ -167,6 +167,10 @@ public class IxorTalkConfigProperties {
                     this.autoApproveScopes = autoApproveScopes;
                 }
 
+                public void setRedirectUris(Set<String> redirectUris) {
+                    this.redirectUris = redirectUris;
+                }
+
                 public Set<String> getRedirectUris() {
                     return redirectUris;
                 }
