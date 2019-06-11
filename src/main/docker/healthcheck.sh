@@ -25,6 +25,6 @@
  #!/bin/sh
 
 MANAGEMENT_PORT=${MANAGEMENT_PORT:="8007"}
-HEALTH_PATH=${HEALTH_PATH:="/authorization-server/actuator/health"}
+HEALTH_PATH=${HEALTH_PATH:="/uaa/actuator/health"}
 
 wget -q http://localhost:${MANAGEMENT_PORT}${HEALTH_PATH} -O /dev/null

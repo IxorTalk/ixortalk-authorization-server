@@ -23,7 +23,7 @@
 #
 
 server:
-  context-path: /authorization-server
+  context-path: /uaa
 
 liquibase:
   change-log: classpath:liquibase/master.xml
