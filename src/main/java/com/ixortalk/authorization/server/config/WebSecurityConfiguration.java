@@ -130,6 +130,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         return map -> new IxorTalkPrincipal(
                 principalExtractorType,
                 principalExtractorType.getPrincipalName(map),
+                principalExtractorType.getPrincipalName(map),
                 principalExtractorType.getFirstName(map),
                 principalExtractorType.getLastName(map),
                 principalExtractorType.getProfilePictureUrl(map, userInfoProviderRestTemplate),

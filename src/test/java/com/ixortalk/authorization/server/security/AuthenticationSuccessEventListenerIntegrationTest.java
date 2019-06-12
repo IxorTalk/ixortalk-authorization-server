@@ -64,7 +64,7 @@ public class AuthenticationSuccessEventListenerIntegrationTest extends AbstractS
 
     @Test
     public void userDoesNotExist() {
-        when(oAuth2Authentication.getPrincipal()).thenReturn(new IxorTalkPrincipal(IXORTALK, PRINCIPAL_EMAIL, FIRST_NAME, LAST_NAME, PROFILE_PICTURE_URL, USER_INFO_OBJECT));
+        when(oAuth2Authentication.getPrincipal()).thenReturn(new IxorTalkPrincipal(IXORTALK, PRINCIPAL_EMAIL, PRINCIPAL_EMAIL, FIRST_NAME, LAST_NAME, PROFILE_PICTURE_URL, USER_INFO_OBJECT));
 
         authenticationSuccessEventListener.onApplicationEvent(authenticationSuccessEvent);
 
@@ -93,7 +93,7 @@ public class AuthenticationSuccessEventListenerIntegrationTest extends AbstractS
                         .withLoginProvider(IXORTALK)
                         .build());
 
-        when(oAuth2Authentication.getPrincipal()).thenReturn(new IxorTalkPrincipal(IXORTALK, PRINCIPAL_EMAIL, FIRST_NAME, LAST_NAME, PROFILE_PICTURE_URL, USER_INFO_OBJECT));
+        when(oAuth2Authentication.getPrincipal()).thenReturn(new IxorTalkPrincipal(IXORTALK, PRINCIPAL_EMAIL, PRINCIPAL_EMAIL, FIRST_NAME, LAST_NAME, PROFILE_PICTURE_URL, USER_INFO_OBJECT));
 
         authenticationSuccessEventListener.onApplicationEvent(authenticationSuccessEvent);
     }
@@ -110,7 +110,7 @@ public class AuthenticationSuccessEventListenerIntegrationTest extends AbstractS
                         .withLoginProvider(EVENTBRITE)
                         .build());
 
-        when(oAuth2Authentication.getPrincipal()).thenReturn(new IxorTalkPrincipal(IXORTALK, PRINCIPAL_EMAIL, FIRST_NAME, LAST_NAME, PROFILE_PICTURE_URL, USER_INFO_OBJECT));
+        when(oAuth2Authentication.getPrincipal()).thenReturn(new IxorTalkPrincipal(IXORTALK, PRINCIPAL_EMAIL, PRINCIPAL_EMAIL, FIRST_NAME, LAST_NAME, PROFILE_PICTURE_URL, USER_INFO_OBJECT));
 
         authenticationSuccessEventListener.onApplicationEvent(authenticationSuccessEvent);
     }

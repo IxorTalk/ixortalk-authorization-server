@@ -32,14 +32,16 @@ public class IxorTalkPrincipal implements Principal, Serializable {
 
     private LoginProvider loginProvider;
     private String name;
+    private String email;
     private String firstName;
     private String lastName;
     private String profilePictureUrl;
     private Object userInfo;
 
-    public IxorTalkPrincipal(LoginProvider loginProvider, String name, String firstName, String lastName, String profilePictureUrl, Object userInfo) {
+    public IxorTalkPrincipal(LoginProvider loginProvider, String name, String email, String firstName, String lastName, String profilePictureUrl, Object userInfo) {
         this.loginProvider = loginProvider;
         this.name = name;
+        this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
         this.profilePictureUrl = profilePictureUrl;
@@ -53,6 +55,10 @@ public class IxorTalkPrincipal implements Principal, Serializable {
 
     public LoginProvider getLoginProvider() {
         return loginProvider;
+    }
+
+    public String getEmail() {
+        return email;
     }
 
     public String getFirstName() {
