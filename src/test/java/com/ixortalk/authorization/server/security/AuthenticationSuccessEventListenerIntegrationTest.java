@@ -34,7 +34,7 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import javax.inject.Inject;
 
 import static com.ixortalk.authorization.server.domain.LoginProvider.EVENTBRITE;
-import static com.ixortalk.authorization.server.domain.LoginProvider.INTERNAL;
+import static com.ixortalk.authorization.server.domain.LoginProvider.IXORTALK;
 import static com.ixortalk.authorization.server.domain.UserProfileTestBuilder.aUserProfile;
 import static com.ixortalk.test.util.Randomizer.nextString;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -64,7 +64,7 @@ public class AuthenticationSuccessEventListenerIntegrationTest extends AbstractS
 
     @Test
     public void userDoesNotExist() {
-        when(oAuth2Authentication.getPrincipal()).thenReturn(new IxorTalkPrincipal(INTERNAL, PRINCIPAL_EMAIL, FIRST_NAME, LAST_NAME, PROFILE_PICTURE_URL, USER_INFO_OBJECT));
+        when(oAuth2Authentication.getPrincipal()).thenReturn(new IxorTalkPrincipal(IXORTALK, PRINCIPAL_EMAIL, FIRST_NAME, LAST_NAME, PROFILE_PICTURE_URL, USER_INFO_OBJECT));
 
         authenticationSuccessEventListener.onApplicationEvent(authenticationSuccessEvent);
 
@@ -77,7 +77,7 @@ public class AuthenticationSuccessEventListenerIntegrationTest extends AbstractS
                                 .withEmail(PRINCIPAL_EMAIL)
                                 .withFirstName(FIRST_NAME)
                                 .withLastName(LAST_NAME)
-                                .withLoginProvider(INTERNAL)
+                                .withLoginProvider(IXORTALK)
                                 .build());
     }
 
@@ -90,10 +90,10 @@ public class AuthenticationSuccessEventListenerIntegrationTest extends AbstractS
                         .withEmail(PRINCIPAL_EMAIL)
                         .withFirstName(FIRST_NAME)
                         .withLastName(LAST_NAME)
-                        .withLoginProvider(INTERNAL)
+                        .withLoginProvider(IXORTALK)
                         .build());
 
-        when(oAuth2Authentication.getPrincipal()).thenReturn(new IxorTalkPrincipal(INTERNAL, PRINCIPAL_EMAIL, FIRST_NAME, LAST_NAME, PROFILE_PICTURE_URL, USER_INFO_OBJECT));
+        when(oAuth2Authentication.getPrincipal()).thenReturn(new IxorTalkPrincipal(IXORTALK, PRINCIPAL_EMAIL, FIRST_NAME, LAST_NAME, PROFILE_PICTURE_URL, USER_INFO_OBJECT));
 
         authenticationSuccessEventListener.onApplicationEvent(authenticationSuccessEvent);
     }
@@ -110,7 +110,7 @@ public class AuthenticationSuccessEventListenerIntegrationTest extends AbstractS
                         .withLoginProvider(EVENTBRITE)
                         .build());
 
-        when(oAuth2Authentication.getPrincipal()).thenReturn(new IxorTalkPrincipal(INTERNAL, PRINCIPAL_EMAIL, FIRST_NAME, LAST_NAME, PROFILE_PICTURE_URL, USER_INFO_OBJECT));
+        when(oAuth2Authentication.getPrincipal()).thenReturn(new IxorTalkPrincipal(IXORTALK, PRINCIPAL_EMAIL, FIRST_NAME, LAST_NAME, PROFILE_PICTURE_URL, USER_INFO_OBJECT));
 
         authenticationSuccessEventListener.onApplicationEvent(authenticationSuccessEvent);
     }

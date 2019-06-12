@@ -34,7 +34,7 @@ import java.util.Map;
 
 public enum LoginProvider {
 
-    INTERNAL {
+    IXORTALK {
         @Override
         public String getPrincipalName(Map<String, Object> map) {
             return (String) map.get("name");

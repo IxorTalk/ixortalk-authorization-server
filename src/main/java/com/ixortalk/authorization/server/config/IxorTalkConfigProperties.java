@@ -34,7 +34,7 @@ import java.util.Set;
 
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
-import static com.ixortalk.authorization.server.domain.LoginProvider.INTERNAL;
+import static com.ixortalk.authorization.server.domain.LoginProvider.IXORTALK;
 
 @ConfigurationProperties("ixortalk")
 public class IxorTalkConfigProperties {
@@ -182,7 +182,7 @@ public class IxorTalkConfigProperties {
 
         private String loginPath;
         private ClientResources clientResource;
-        private LoginProvider principalExtractorType = INTERNAL;
+        private LoginProvider principalExtractorType = IXORTALK;
 
         public String getLoginPath() {
             return loginPath;
