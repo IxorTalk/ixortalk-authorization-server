@@ -52,7 +52,7 @@ ixortalk:
   third-party-logins:
     test-third-party:
       login-path: /login/test-third-party
-      principal-extractor-type: internal
+      principal-extractor-type: ixortalk
       client-resource:
         resource:
           user-info-uri: http://localhost:${wiremock.third-party.port}/users
