@@ -46,10 +46,14 @@ public class UserInfoController {
         return userProfileRestResource.findByEmail(principal.getName())
                 .<Object>map(userProfile ->
                         new PrincipalDTO(
-                                userProfile,
+                                ixorTalkPrincipal(principal),
                                 getAuthoritiesFromPrincipal(principal),
                                 getUserInfoFromPrincipal(principal)))
                 .orElse(principal);
+    }
+
+    private IxorTalkPrincipal ixorTalkPrincipal(Principal principal) {
+        return (IxorTalkPrincipal) ((OAuth2Authentication) principal).getPrincipal();
     }
 
     private Collection<GrantedAuthority> getAuthoritiesFromPrincipal(Principal principal) {

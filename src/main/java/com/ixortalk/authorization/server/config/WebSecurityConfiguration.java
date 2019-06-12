@@ -121,17 +121,18 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 client.getResource().getUserInfoUri(),
                 client.getClient().getClientId());
         tokenServices.setRestTemplate(oAuth2RestTemplate);
-        tokenServices.setPrincipalExtractor(createPrincipalExtractor(principalExtractorType));
+        tokenServices.setPrincipalExtractor(createPrincipalExtractor(principalExtractorType, oAuth2RestTemplate));
         filter.setTokenServices(tokenServices);
         return filter;
     }
 
-    private PrincipalExtractor createPrincipalExtractor(LoginProvider principalExtractorType) {
+    private PrincipalExtractor createPrincipalExtractor(LoginProvider principalExtractorType, OAuth2RestTemplate userInfoProviderRestTemplate) {
         return map -> new IxorTalkPrincipal(
                 principalExtractorType,
                 principalExtractorType.getPrincipalName(map),
                 principalExtractorType.getFirstName(map),
                 principalExtractorType.getLastName(map),
+                principalExtractorType.getProfilePictureUrl(map, userInfoProviderRestTemplate),
                 principalExtractorType.getUserInfo(map));
     }
 

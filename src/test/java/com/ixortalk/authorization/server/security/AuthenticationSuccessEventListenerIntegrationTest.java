@@ -45,6 +45,7 @@ public class AuthenticationSuccessEventListenerIntegrationTest extends AbstractS
     private static final String PRINCIPAL_EMAIL = nextString("user@organization.com");
     private static final String FIRST_NAME = nextString("firstName");
     private static final String LAST_NAME = nextString("lastName");
+    private static final String PROFILE_PICTURE_URL = nextString("http://profile-pics.com/pic-");
     private static final String USER_INFO_OBJECT = nextString("userInfoObject");
 
     @Inject
@@ -63,7 +64,7 @@ public class AuthenticationSuccessEventListenerIntegrationTest extends AbstractS
 
     @Test
     public void userDoesNotExist() {
-        when(oAuth2Authentication.getPrincipal()).thenReturn(new IxorTalkPrincipal(INTERNAL, PRINCIPAL_EMAIL, FIRST_NAME, LAST_NAME, USER_INFO_OBJECT));
+        when(oAuth2Authentication.getPrincipal()).thenReturn(new IxorTalkPrincipal(INTERNAL, PRINCIPAL_EMAIL, FIRST_NAME, LAST_NAME, PROFILE_PICTURE_URL, USER_INFO_OBJECT));
 
         authenticationSuccessEventListener.onApplicationEvent(authenticationSuccessEvent);
 
@@ -92,7 +93,7 @@ public class AuthenticationSuccessEventListenerIntegrationTest extends AbstractS
                         .withLoginProvider(INTERNAL)
                         .build());
 
-        when(oAuth2Authentication.getPrincipal()).thenReturn(new IxorTalkPrincipal(INTERNAL, PRINCIPAL_EMAIL, FIRST_NAME, LAST_NAME, USER_INFO_OBJECT));
+        when(oAuth2Authentication.getPrincipal()).thenReturn(new IxorTalkPrincipal(INTERNAL, PRINCIPAL_EMAIL, FIRST_NAME, LAST_NAME, PROFILE_PICTURE_URL, USER_INFO_OBJECT));
 
         authenticationSuccessEventListener.onApplicationEvent(authenticationSuccessEvent);
     }
@@ -109,7 +110,7 @@ public class AuthenticationSuccessEventListenerIntegrationTest extends AbstractS
                         .withLoginProvider(EVENTBRITE)
                         .build());
 
-        when(oAuth2Authentication.getPrincipal()).thenReturn(new IxorTalkPrincipal(INTERNAL, PRINCIPAL_EMAIL, FIRST_NAME, LAST_NAME, USER_INFO_OBJECT));
+        when(oAuth2Authentication.getPrincipal()).thenReturn(new IxorTalkPrincipal(INTERNAL, PRINCIPAL_EMAIL, FIRST_NAME, LAST_NAME, PROFILE_PICTURE_URL, USER_INFO_OBJECT));
 
         authenticationSuccessEventListener.onApplicationEvent(authenticationSuccessEvent);
     }

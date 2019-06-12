@@ -23,6 +23,12 @@
  */
 package com.ixortalk.authorization.server.domain;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.client.OAuth2RestTemplate;
+
 import java.util.List;
 import java.util.Map;
 
@@ -42,6 +48,11 @@ public enum LoginProvider {
         @Override
         public String getLastName(Map<String, Object> map) {
             return getUserInfoField(map, "lastName");
+        }
+
+        @Override
+        public String getProfilePictureUrl(Map<String, Object> map, OAuth2RestTemplate userInfoProviderRestTemplate) {
+            return getUserInfoField(map, "profilePictureUrl");
         }
 
         @Override
@@ -73,10 +84,27 @@ public enum LoginProvider {
         }
 
         @Override
+        public String getProfilePictureUrl(Map<String, Object> map, OAuth2RestTemplate userInfoProviderRestTemplate) {
+            // TODO : Proper profile picture handing: https://github.com/IxorTalk/ixortalk-authorization-server/issues/6
+            try {
+                Object imageId = map.get("image_id");
+                if (imageId != null) {
+                    ResponseEntity<JsonNode> profilePictureResponse = userInfoProviderRestTemplate.getForEntity("https://www.eventbriteapi.com/v3/media/" + imageId, JsonNode.class);
+                    return profilePictureResponse.getBody().get("url").textValue();
+                }
+            } catch (Exception e) {
+                LOGGER.warn("Error retrieving profile pic from Eventbrite: " + e.getMessage(), e);
+            }
+            return null;
+        }
+
+        @Override
         public Object getUserInfo(Map<String, Object> map) {
             return map;
         }
     };
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(LoginProvider.class);
 
     public abstract String getPrincipalName(Map<String, Object> map);
 
@@ -84,5 +112,8 @@ public enum LoginProvider {
 
     public abstract String getLastName(Map<String, Object> map);
 
+    public abstract String getProfilePictureUrl(Map<String, Object> map, OAuth2RestTemplate userInfoProviderRestTemplate);
+
     public abstract Object getUserInfo(Map<String, Object> map);
+
 }

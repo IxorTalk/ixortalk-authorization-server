@@ -24,26 +24,26 @@
 package com.ixortalk.authorization.server.rest;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
-import com.ixortalk.authorization.server.domain.UserProfile;
+import com.ixortalk.authorization.server.security.IxorTalkPrincipal;
 import org.springframework.security.core.GrantedAuthority;
 
 import java.util.Collection;
 
 class PrincipalDTO {
 
-    private UserProfile userProfile;
+    private IxorTalkPrincipal ixorTalkPrincipal;
     private Collection<GrantedAuthority> authorities;
     private Object userInfo;
 
-    PrincipalDTO(UserProfile userProfile, Collection<GrantedAuthority> authorities, Object userInfo) {
-        this.userProfile = userProfile;
+    PrincipalDTO(IxorTalkPrincipal ixorTalkPrincipal, Collection<GrantedAuthority> authorities, Object userInfo) {
+        this.ixorTalkPrincipal = ixorTalkPrincipal;
         this.authorities = authorities;
         this.userInfo = userInfo;
     }
 
     @JsonUnwrapped
-    public UserProfile getUserProfile() {
-        return userProfile;
+    public IxorTalkPrincipal getIxorTalkPrincipal() {
+        return ixorTalkPrincipal;
     }
 
     public Collection<GrantedAuthority> getAuthorities() {
