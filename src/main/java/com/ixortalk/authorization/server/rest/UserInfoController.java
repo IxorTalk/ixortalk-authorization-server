@@ -23,17 +23,15 @@
  */
 package com.ixortalk.authorization.server.rest;
 
+import com.ixortalk.authorization.server.domain.UserProfile;
 import com.ixortalk.authorization.server.security.IxorTalkPrincipal;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.inject.Inject;
 import java.security.Principal;
-import java.util.Collection;
-
-import static com.google.common.collect.Lists.newArrayList;
+import java.util.Optional;
 
 @RestController
 public class UserInfoController {
@@ -43,25 +41,36 @@ public class UserInfoController {
 
     @RequestMapping("/user")
     public Object user(Principal principal) {
-        return userProfileRestResource.findByEmail(principal.getName())
-                .<Object>map(userProfile ->
-                        new PrincipalDTO(
-                                ixorTalkPrincipal(principal),
-                                getAuthoritiesFromPrincipal(principal),
-                                getUserInfoFromPrincipal(principal)))
-                .orElse(principal);
-    }
+        if (!(principal instanceof OAuth2Authentication && ((OAuth2Authentication) principal).getPrincipal() instanceof IxorTalkPrincipal)) {
+            return principal;
+        }
 
-    private IxorTalkPrincipal ixorTalkPrincipal(Principal principal) {
-        return (IxorTalkPrincipal) ((OAuth2Authentication) principal).getPrincipal();
-    }
+        OAuth2Authentication oAuth2Authentication = (OAuth2Authentication) principal;
+        IxorTalkPrincipal ixorTalkPrincipal = (IxorTalkPrincipal) oAuth2Authentication.getPrincipal();
 
-    private Collection<GrantedAuthority> getAuthoritiesFromPrincipal(Principal principal) {
-        return principal instanceof OAuth2Authentication ? ((OAuth2Authentication) principal).getAuthorities() : newArrayList();
-    }
+        Optional<UserProfile> existingProfile = userProfileRestResource.findByEmail(ixorTalkPrincipal.getName());
 
-    private Object getUserInfoFromPrincipal(Principal principal) {
-        return principal instanceof OAuth2Authentication ? ((IxorTalkPrincipal) ((OAuth2Authentication) principal).getPrincipal()).getUserInfo() : null;
+        existingProfile
+                .filter(userProfile -> ixorTalkPrincipal.getLoginProvider() != userProfile.getLoginProvider())
+                .ifPresent(userProfile -> {
+                    throw new IllegalArgumentException("Different profile already exist for principal " + ixorTalkPrincipal.getName());
+                });
+
+        if (!existingProfile.isPresent()) {
+            userProfileRestResource.save(
+                    new UserProfile(
+                            ixorTalkPrincipal.getName(),
+                            ixorTalkPrincipal.getName(),
+                            ixorTalkPrincipal.getFirstName(),
+                            ixorTalkPrincipal.getLastName(),
+                            ixorTalkPrincipal.getLoginProvider()
+                    ));
+        }
+
+        return new PrincipalDTO(
+                ixorTalkPrincipal,
+                oAuth2Authentication.getAuthorities(),
+                ixorTalkPrincipal.getUserInfo());
     }
 }
 

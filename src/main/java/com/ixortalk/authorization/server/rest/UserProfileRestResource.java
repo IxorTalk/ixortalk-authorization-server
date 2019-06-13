@@ -27,11 +27,16 @@ import com.ixortalk.authorization.server.domain.UserProfile;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+import org.springframework.data.rest.core.annotation.RestResource;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.Optional;
 
-@RepositoryRestResource(exported = false)
+@RepositoryRestResource(path = "user-profiles")
+@PreAuthorize("hasRole('ADMIN')")
 public interface UserProfileRestResource extends CrudRepository<UserProfile, Long> {
 
+    @PreAuthorize("hasRole('ADMIN') or #email == principal.name")
+    @RestResource(exported = false)
     Optional<UserProfile> findByEmail(@Param("email") String email);
 }
