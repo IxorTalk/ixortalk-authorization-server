@@ -37,4 +37,8 @@ public interface UserProfileRestResource extends CrudRepository<UserProfile, Lon
 
     @PreAuthorize("hasRole('ADMIN') or #email == principal.name")
     Optional<UserProfile> findByEmail(@Param("email") String email);
+
+    @Override
+    @PreAuthorize("hasRole('ADMIN') or #userProfile.name == principal.name")
+    UserProfile save(@Param("userProfile") UserProfile userProfile);
 }
