@@ -53,7 +53,10 @@ public class UrlLogoutSuccessHandler extends SimpleUrlLogoutSuccessHandler {
             return;
         }
 
-        if (authentication.getPrincipal() instanceof IxorTalkPrincipal && ((IxorTalkPrincipal) authentication.getPrincipal()).getLoginProvider() == LoginProvider.IXORTALK) {
+        if (authentication != null &&
+                authentication.getPrincipal() != null &&
+                authentication.getPrincipal() instanceof IxorTalkPrincipal &&
+                ((IxorTalkPrincipal) authentication.getPrincipal()).getLoginProvider() == LoginProvider.IXORTALK) {
             if (getTargetUrlParameter() != null) {
                 targetUrl = redirectUriIxortalkLogout + "?" + getTargetUrlParameter() + "=" + targetUrl;
             }
