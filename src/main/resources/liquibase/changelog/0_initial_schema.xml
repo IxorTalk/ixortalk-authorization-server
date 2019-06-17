@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+
+    The MIT License (MIT)
+
+    Copyright (c) 2016-present IxorTalk CVBA
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
+
+-->
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <property name="blob_type" value="bytea" dbms="postgresql"/>
+    <property name="blob_type" value="blob" dbms="h2"/>
+
+    <changeSet id="hibernate_sequence" author="wjans">
+        <createSequence sequenceName="hibernate_sequence" startValue="1000" incrementBy="1"/>
+    </changeSet>
+
+    <changeSet id="oauth_tables" author="wjans">
+        <createTable tableName="oauth_client_details">
+            <column name="client_id" type="varchar(255)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="resource_ids" type="varchar(255)"/>
+            <column name="client_secret" type="varchar(255)"/>
+            <column name="scope" type="varchar(255)"/>
+            <column name="authorized_grant_types" type="varchar(255)"/>
+            <column name="web_server_redirect_uri" type="varchar(255)"/>
+            <column name="authorities" type="varchar(255)"/>
+            <column name="access_token_validity" type="INT"/>
+            <column name="refresh_token_validity" type="INT"/>
+            <column name="additional_information" type="VARCHAR(4096)"/>
+            <column name="autoapprove" type="VARCHAR(4096)"/>
+        </createTable>
+
+        <createTable tableName="oauth_client_token">
+            <column name="token_id" type="varchar(255)"/>
+            <column name="token" type="${blob_type}"/>
+            <column name="authentication_id" type="varchar(255)"/>
+            <column name="user_name" type="varchar(50)"/>
+            <column name="client_id" type="varchar(255)"/>
+        </createTable>
+
+        <createTable tableName="oauth_access_token">
+            <column name="token_id" type="varchar(255)"/>
+            <column name="token" type="${blob_type}"/>
+            <column name="authentication_id" type="varchar(255)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="user_name" type="varchar(50)"/>
+            <column name="client_id" type="varchar(255)"/>
+            <column name="authentication" type="${blob_type}"/>
+            <column name="refresh_token" type="varchar(255)"/>
+        </createTable>
+
+        <createTable tableName="oauth_refresh_token">
+            <column name="token_id" type="varchar(255)"/>
+            <column name="token" type="${blob_type}"/>
+            <column name="authentication" type="${blob_type}"/>
+        </createTable>
+
+        <createTable tableName="oauth_code">
+            <column name="code" type="varchar(255)"/>
+        </createTable>
+
+        <createTable tableName="oauth_approvals">
+            <column name="userId" type="varchar(255)"/>
+            <column name="clientId" type="varchar(255)"/>
+            <column name="scope" type="varchar(255)"/>
+            <column name="status" type="varchar(255)"/>
+            <column name="expiresAt" type="timestamp"/>
+            <column name="lastModifiedAt" type="timestamp"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="crate_user_profile_table" author="wjans">
+        <createTable tableName="user_profile">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="email" type="varchar(255)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="first_name" type="varchar(255)"/>
+            <column name="last_name" type="varchar(255)"/>
+            <column name="login_provider" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex indexName="idx_user_profile_name"
+                     tableName="user_profile"
+                     unique="true">
+            <column name="name" type="varchar(255)"/>
+        </createIndex>
+
+        <createIndex indexName="idx_user_profile_email"
+                     tableName="user_profile"
+                     unique="true">
+            <column name="email" type="varchar(255)"/>
+        </createIndex>
+
+    </changeSet>
+
+</databaseChangeLog>
