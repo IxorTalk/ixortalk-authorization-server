@@ -226,12 +226,11 @@ public class IxorTalkConfigProperties {
         }
     }
 
-
-
     public static class Logout {
 
         private String defaultRedirectUri;
         private String redirectUriParamName;
+        private String redirectUriIxortalkLogout;
 
         public void setDefaultRedirectUri(String defaultRedirectUri) {
             this.defaultRedirectUri = defaultRedirectUri;
@@ -247,6 +246,14 @@ public class IxorTalkConfigProperties {
 
         public void setRedirectUriParamName(String redirectUriParamName) {
             this.redirectUriParamName = redirectUriParamName;
+        }
+
+        public String getRedirectUriIxortalkLogout() {
+            return redirectUriIxortalkLogout;
+        }
+
+        public void setRedirectUriIxortalkLogout(String redirectUriIxortalkLogout) {
+            this.redirectUriIxortalkLogout = redirectUriIxortalkLogout;
         }
     }
 }
