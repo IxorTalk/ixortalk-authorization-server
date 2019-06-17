@@ -25,6 +25,7 @@ package com.ixortalk.authorization.server.config;
 
 import com.ixortalk.authorization.server.domain.LoginProvider;
 import com.ixortalk.authorization.server.security.IxorTalkPrincipal;
+import com.ixortalk.authorization.server.security.UrlLogoutSuccessHandler;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.PrincipalExtractor;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.UserInfoTokenServices;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -83,7 +84,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     private LogoutSuccessHandler logoutSuccessHandler() {
-        SimpleUrlLogoutSuccessHandler logoutSuccessHandler = new SimpleUrlLogoutSuccessHandler();
+        SimpleUrlLogoutSuccessHandler logoutSuccessHandler = new UrlLogoutSuccessHandler(ixorTalkConfigProperties.getLogout().getRedirectUriIxortalkLogout());
         logoutSuccessHandler.setDefaultTargetUrl(ixorTalkConfigProperties.getLogout().getDefaultRedirectUri());
         logoutSuccessHandler.setTargetUrlParameter(ixorTalkConfigProperties.getLogout().getRedirectUriParamName());
         return logoutSuccessHandler;
