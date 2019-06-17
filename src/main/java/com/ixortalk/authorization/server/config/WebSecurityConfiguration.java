@@ -24,12 +24,10 @@
 package com.ixortalk.authorization.server.config;
 
 import com.ixortalk.authorization.server.domain.LoginProvider;
-import com.ixortalk.authorization.server.security.AuthenticationSuccessEventListener;
 import com.ixortalk.authorization.server.security.IxorTalkPrincipal;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.PrincipalExtractor;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.UserInfoTokenServices;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -64,9 +62,6 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Inject
     private IxorTalkConfigProperties ixorTalkConfigProperties;
-
-    @Inject
-    private ApplicationEventPublisher applicationEventPublisher;
 
     @Inject
     private OAuth2ClientContext oAuth2ClientContext;
@@ -107,16 +102,10 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         return filter;
     }
 
-    @Bean
-    public AuthenticationSuccessEventListener authenticationSuccessEventListener() {
-        return new AuthenticationSuccessEventListener();
-    }
-
     private Filter ssoFilter(LoginProvider principalExtractorType, IxorTalkConfigProperties.ClientResources client, String path) {
         OAuth2ClientAuthenticationProcessingFilter filter = new OAuth2ClientAuthenticationProcessingFilter(path);
         OAuth2RestTemplate oAuth2RestTemplate = new OAuth2RestTemplate(client.getClient(), oAuth2ClientContext);
         filter.setRestTemplate(oAuth2RestTemplate);
-        filter.setApplicationEventPublisher(applicationEventPublisher);
         UserInfoTokenServices tokenServices = new UserInfoTokenServices(
                 client.getResource().getUserInfoUri(),
                 client.getClient().getClientId());

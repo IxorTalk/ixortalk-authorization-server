@@ -35,8 +35,11 @@ public class ResourceServer extends ResourceServerConfigurerAdapter {
     @Override
     public void configure(HttpSecurity http) throws Exception {
         http
-                .antMatcher("/user")
+                .requestMatchers()
+                .antMatchers("/user", "/user-profiles/**")
+                .and()
                 .authorizeRequests()
-                .anyRequest().authenticated();
+                .anyRequest()
+                .authenticated();
     }
 }
