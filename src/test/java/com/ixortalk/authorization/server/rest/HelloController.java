@@ -21,24 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.ixortalk.authorization.server;
+package com.ixortalk.authorization.server.rest;
 
-public enum TestConfigConstants {
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-    TEST_CLIENT_NAME("test-client"),
-    TEST_CLIENT_ID("test-client-id"),
-    TEST_CLIENT_SECRET("test-client-secret"),
-    TEST_CLIENT_REDIRECT_URI("http://localhost/login"),
-    THIRD_PARTY_LOGIN_IXORTALK("third-party-ixortalk"),
-    THIRD_PARTY_LOGIN_EVENTBRITE("third-party-eventbrite");
+import java.security.Principal;
 
-    private String configValue;
+@RestController
+public class HelloController {
 
-    TestConfigConstants(String configValue) {
-        this.configValue = configValue;
-    }
-
-    public String configValue() {
-        return configValue;
+    @GetMapping("/hello")
+    public String hello(Principal principal) {
+        return "hello " + principal.getName();
     }
 }
