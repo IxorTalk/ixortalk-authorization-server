@@ -91,6 +91,8 @@ public abstract class AbstractSpringIntegrationTest {
     public static final String FIRST_NAME_EVENTBRITE_PRINCIPAL = nextString("first_name_eventbrite");
     public static final String LAST_NAME_EVENTBRITE_PRINCIPAL = nextString("last_name_eventbrite");
     public static final String PROFILE_PICTURE_URL_IXORTALK_PRINCIPAL = nextString("profilePictureUrl");
+    public static final String ROLE_IXORTALK_ROLE_1 = "ROLE_IXORTALK_ROLE_1";
+    public static final String ROLE_IXORTALK_ROLE_2 = "ROLE_IXORTALK_ROLE_2";
 
     @Rule
     public WireMockRule thirdPartyIxorTalkWireMockRule = new WireMockRule(
@@ -154,6 +156,7 @@ public abstract class AbstractSpringIntegrationTest {
         thirdPartyPrincipalIxorTalk = newHashMap();
         thirdPartyPrincipalIxorTalk.put("name", PRINCIPAL_NAME_IXORTALK);
         thirdPartyPrincipalIxorTalk.put("userInfo", userInfoIxorTalk);
+        thirdPartyPrincipalIxorTalk.put("authorities", newArrayList(singletonMap("name", ROLE_IXORTALK_ROLE_1), singletonMap("name", ROLE_IXORTALK_ROLE_2)));
 
         thirdPartyPrincipalEventbrite = newHashMap();
         thirdPartyPrincipalEventbrite.put("emails", newArrayList(singletonMap("email", PRINCIPAL_NAME_EVENTBRITE)));

@@ -23,14 +23,20 @@
  */
 package com.ixortalk.authorization.server.domain;
 
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import java.util.Set;
 
 import static javax.persistence.EnumType.STRING;
+import static javax.persistence.FetchType.EAGER;
 import static org.apache.commons.lang3.Validate.isTrue;
+import static org.hibernate.validator.internal.util.CollectionHelper.newHashSet;
 
 @Entity
 public class UserProfile {
@@ -54,18 +60,30 @@ public class UserProfile {
     @Column
     private String profilePictureUrl;
 
+    @ElementCollection(fetch = EAGER)
+    @CollectionTable(name = "authorities", joinColumns = @JoinColumn(name = "user_profile_id"))
+    private Set<Authority> authorities = newHashSet();
+
     @Column
     @Enumerated(STRING)
     private LoginProvider loginProvider;
 
     private UserProfile() {}
 
-    public UserProfile(String name, String email, String firstName, String lastName, String profilePictureUrl, LoginProvider loginProvider) {
+    public UserProfile(
+            String name,
+            String email,
+            String firstName,
+            String lastName,
+            String profilePictureUrl,
+            Set<Authority> authorities,
+            LoginProvider loginProvider) {
         this.name = name;
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
         this.profilePictureUrl = profilePictureUrl;
+        this.authorities = authorities;
         this.loginProvider = loginProvider;
     }
 
@@ -87,6 +105,10 @@ public class UserProfile {
 
     public String getProfilePictureUrl() {
         return profilePictureUrl;
+    }
+
+    public Set<Authority> getAuthorities() {
+        return authorities;
     }
 
     public LoginProvider getLoginProvider() {

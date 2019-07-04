@@ -131,4 +131,25 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="issue_12_add_authorities" author="wjans">
+        <createTable tableName="authorities">
+            <column name="authority" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_profile_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="authorities" baseColumnNames="user_profile_id"
+                                 constraintName="authority_user_profile_fk"
+                                 referencedTableName="user_profile" referencedColumnNames="id"/>
+        <createIndex tableName="authorities" indexName="authority_user_profile_idx">
+            <column name="user_profile_id"  type="bigint"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="issue_12_truncate_profiles" author="wjans">
+        <delete tableName="user_profile"/>
+    </changeSet>
+
 </databaseChangeLog>
