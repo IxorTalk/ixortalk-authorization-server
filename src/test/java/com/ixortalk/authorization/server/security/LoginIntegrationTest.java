@@ -28,17 +28,17 @@ import org.junit.Test;
 
 import static com.ixortalk.authorization.server.TestConfigConstants.THIRD_PARTY_LOGIN_EVENTBRITE;
 import static com.ixortalk.authorization.server.TestConfigConstants.THIRD_PARTY_LOGIN_IXORTALK;
+import static com.ixortalk.authorization.server.domain.LoginProvider.EVENTBRITE;
+import static com.ixortalk.authorization.server.domain.UserProfileTestBuilder.aUserProfile;
 import static com.ixortalk.test.util.Randomizer.nextString;
 import static com.jayway.restassured.RestAssured.given;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static org.assertj.core.api.Assertions.assertThat;
 import static wiremock.org.apache.http.HttpHeaders.LOCATION;
+import static wiremock.org.eclipse.jetty.http.HttpStatus.INTERNAL_SERVER_ERROR_500;
 import static wiremock.org.eclipse.jetty.http.HttpStatus.MOVED_TEMPORARILY_302;
 
 public class LoginIntegrationTest extends AbstractSpringIntegrationTest {
-
-    public static final String PRINCIPAL_NAME_IXORTALK = nextString("principalNameIxorTalk");
-    public static final String PRINCIPAL_NAME_EVENTBRITE = nextString("principalNameEventbrite");
 
     @Test
     public void loginRedirect() {
@@ -85,6 +85,46 @@ public class LoginIntegrationTest extends AbstractSpringIntegrationTest {
                         .extract().asString();
 
         assertThat(response).isEqualTo("hello " + PRINCIPAL_NAME_EVENTBRITE);
+    }
+
+    @Test
+    public void login_loginProviderMismatch() {
+
+        userProfileRepository.save(
+                aUserProfile()
+                        .withName(PRINCIPAL_NAME_IXORTALK)
+                        .withEmail(PRINCIPAL_NAME_IXORTALK)
+                        .withFirstName(nextString("persistedFirstName"))
+                        .withLastName(nextString("persistedLastName"))
+                        .withProfilePictureUrl(nextString("persistedProfilePictureUrl"))
+                        .withLoginProvider(EVENTBRITE)
+                        .build());
+
+        String location =
+                given()
+                        .filter(sessionFilter)
+                        .when()
+                        .get(ixorTalkConfigProperties.getThirdPartyLogins().get(THIRD_PARTY_LOGIN_IXORTALK.configValue()).getLoginPath())
+                        .then()
+                        .statusCode(MOVED_TEMPORARILY_302)
+                        .extract().header(LOCATION);
+
+        location =
+                given()
+                        .filter(sessionFilter)
+                        .when()
+                        .get(location)
+                        .then()
+                        .statusCode(MOVED_TEMPORARILY_302)
+                        .extract().header(LOCATION);
+
+        given()
+                .filter(sessionFilter)
+                .when()
+                .get(location)
+                .then()
+                .log().all()
+                .statusCode(INTERNAL_SERVER_ERROR_500);
     }
 
 }

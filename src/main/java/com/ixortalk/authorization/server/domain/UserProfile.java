@@ -30,6 +30,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
 import static javax.persistence.EnumType.STRING;
+import static org.apache.commons.lang3.Validate.isTrue;
 
 @Entity
 public class UserProfile {
@@ -38,7 +39,7 @@ public class UserProfile {
     @GeneratedValue
     private Long id;
 
-    @Column
+    @Column(unique = true)
     private String name;
 
     @Column
@@ -51,16 +52,20 @@ public class UserProfile {
     private String lastName;
 
     @Column
+    private String profilePictureUrl;
+
+    @Column
     @Enumerated(STRING)
     private LoginProvider loginProvider;
 
     private UserProfile() {}
 
-    public UserProfile(String name, String email, String firstName, String lastName, LoginProvider loginProvider) {
+    public UserProfile(String name, String email, String firstName, String lastName, String profilePictureUrl, LoginProvider loginProvider) {
         this.name = name;
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.profilePictureUrl = profilePictureUrl;
         this.loginProvider = loginProvider;
     }
 
@@ -80,8 +85,17 @@ public class UserProfile {
         return lastName;
     }
 
+    public String getProfilePictureUrl() {
+        return profilePictureUrl;
+    }
+
     public LoginProvider getLoginProvider() {
         return loginProvider;
+    }
+
+    public UserProfile assertCorrectProvider(LoginProvider loginProvider) {
+        isTrue(this.loginProvider == loginProvider, "Different profile already exist for principal " + getName());
+        return this;
     }
 }
 

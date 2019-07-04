@@ -21,36 +21,52 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.ixortalk.authorization.server.rest;
+package com.ixortalk.authorization.server.security;
 
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
-import com.ixortalk.authorization.server.security.IxorTalkPrincipal;
 import org.springframework.security.core.GrantedAuthority;
 
 import java.util.Collection;
 
-class PrincipalDTO {
+public class UserDetails implements org.springframework.security.core.userdetails.UserDetails {
 
-    private IxorTalkPrincipal ixorTalkPrincipal;
-    private Collection<GrantedAuthority> authorities;
-    private Object userInfo;
+    private String username;
 
-    PrincipalDTO(IxorTalkPrincipal ixorTalkPrincipal, Collection<GrantedAuthority> authorities, Object userInfo) {
-        this.ixorTalkPrincipal = ixorTalkPrincipal;
-        this.authorities = authorities;
-        this.userInfo = userInfo;
+    public UserDetails(String username) {
+        this.username = username;
     }
 
-    @JsonUnwrapped
-    public IxorTalkPrincipal getIxorTalkPrincipal() {
-        return ixorTalkPrincipal;
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return null;
     }
 
-    public Collection<GrantedAuthority> getAuthorities() {
-        return authorities;
+    @Override
+    public String getPassword() {
+        return null;
     }
 
-    public Object getUserInfo() {
-        return userInfo;
+    @Override
+    public String getUsername() {
+        return this.username;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 }

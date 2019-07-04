@@ -23,54 +23,27 @@
  */
 package com.ixortalk.authorization.server.rest;
 
-import com.ixortalk.authorization.server.domain.UserProfile;
-import com.ixortalk.authorization.server.security.IxorTalkPrincipal;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.inject.Inject;
 import java.security.Principal;
-import java.util.Optional;
+
+import static org.springframework.http.ResponseEntity.ok;
 
 @RestController
 public class UserInfoController {
 
     @Inject
-    private UserProfileRestResource userProfileRestResource;
+    private UserProfileRepository userProfileRepository;
 
     @RequestMapping("/user")
     public Object user(Principal principal) {
-        if (!(principal instanceof OAuth2Authentication && ((OAuth2Authentication) principal).getPrincipal() instanceof IxorTalkPrincipal)) {
-            return principal;
-        }
-
-        OAuth2Authentication oAuth2Authentication = (OAuth2Authentication) principal;
-        IxorTalkPrincipal ixorTalkPrincipal = (IxorTalkPrincipal) oAuth2Authentication.getPrincipal();
-
-        Optional<UserProfile> existingProfile = userProfileRestResource.findByEmail(ixorTalkPrincipal.getName());
-
-        existingProfile
-                .filter(userProfile -> ixorTalkPrincipal.getLoginProvider() != userProfile.getLoginProvider())
-                .ifPresent(userProfile -> {
-                    throw new IllegalArgumentException("Different profile already exist for principal " + ixorTalkPrincipal.getName());
-                });
-
-        if (!existingProfile.isPresent()) {
-            userProfileRestResource.save(
-                    new UserProfile(
-                            ixorTalkPrincipal.getName(),
-                            ixorTalkPrincipal.getName(),
-                            ixorTalkPrincipal.getFirstName(),
-                            ixorTalkPrincipal.getLastName(),
-                            ixorTalkPrincipal.getLoginProvider()
-                    ));
-        }
-
-        return new PrincipalDTO(
-                ixorTalkPrincipal,
-                oAuth2Authentication.getAuthorities(),
-                ixorTalkPrincipal.getUserInfo());
+        return userProfileRepository.findByEmail(principal.getName())
+                .<ResponseEntity<?>>map(ResponseEntity::ok)
+                .orElse(ok(principal));
     }
+
 }
 

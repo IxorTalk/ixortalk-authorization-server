@@ -21,33 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.ixortalk.authorization.server.security;
+package com.ixortalk.authorization.server.rest;
 
-import com.ixortalk.authorization.server.AbstractSpringIntegrationTest;
-import org.junit.Test;
-import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import com.ixortalk.authorization.server.domain.UserProfile;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import java.util.Optional;
 
-public class TokenIntegrationTest extends AbstractSpringIntegrationTest {
+public interface UserProfileRepository extends CrudRepository<UserProfile, Long> {
 
-    @Test
-    public void getAccessToken() {
-        OAuth2AccessToken oAuth2AccessToken = getAccessTokenWithAuthorizationCode();
-
-        assertThat(oAuth2AccessToken).isNotNull().extracting(OAuth2AccessToken::getValue).isNotNull();
-        assertThat(oAuth2AccessToken.getRefreshToken()).isNotNull();
-    }
-
-    @Test
-    public void refreshAccessToken() {
-
-        OAuth2AccessToken initialToken = getAccessTokenWithAuthorizationCode();
-        OAuth2AccessToken refreshedToken = getAccessTokenWithRefreshToken(initialToken.getRefreshToken());
-
-        assertThat(refreshedToken).isNotNull().extracting(OAuth2AccessToken::getValue).isNotNull();
-        assertThat(refreshedToken.getValue()).isNotEqualTo(initialToken.getValue());
-    }
+    Optional<UserProfile> findByEmail(@Param("email") String email);
 
 }
-
