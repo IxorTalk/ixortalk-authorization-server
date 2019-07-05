@@ -25,6 +25,9 @@ package com.ixortalk.authorization.server.domain;
 
 import com.ixortalk.test.builder.ReflectionInstanceTestBuilder;
 
+import java.util.Set;
+
+import static com.google.common.collect.Sets.newHashSet;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
 
 public class UserProfileTestBuilder extends ReflectionInstanceTestBuilder<UserProfile> {
@@ -34,6 +37,7 @@ public class UserProfileTestBuilder extends ReflectionInstanceTestBuilder<UserPr
     private String firstName;
     private String lastName;
     private String profilePictureUrl;
+    private Set<Authority> authorities = newHashSet();
     private LoginProvider loginProvider;
 
     private UserProfileTestBuilder() {}
@@ -49,6 +53,7 @@ public class UserProfileTestBuilder extends ReflectionInstanceTestBuilder<UserPr
         setField(instance, "firstName", firstName);
         setField(instance, "lastName", lastName);
         setField(instance, "profilePictureUrl", profilePictureUrl);
+        setField(instance, "authorities", authorities);
         setField(instance, "loginProvider", loginProvider);
     }
 
@@ -74,6 +79,11 @@ public class UserProfileTestBuilder extends ReflectionInstanceTestBuilder<UserPr
 
     public UserProfileTestBuilder withProfilePictureUrl(String profilePictureUrl) {
         this.profilePictureUrl = profilePictureUrl;
+        return this;
+    }
+
+    public UserProfileTestBuilder withAuthorities(Authority... authorities) {
+        this.authorities.addAll(newHashSet(authorities));
         return this;
     }
 

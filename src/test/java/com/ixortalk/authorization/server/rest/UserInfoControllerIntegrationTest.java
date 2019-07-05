@@ -27,6 +27,7 @@ import com.ixortalk.authorization.server.AbstractSpringIntegrationTest;
 import com.ixortalk.authorization.server.domain.UserProfile;
 import org.junit.Test;
 
+import static com.ixortalk.authorization.server.domain.AuthorityTestBuilder.authority;
 import static com.ixortalk.authorization.server.domain.LoginProvider.IXORTALK;
 import static com.ixortalk.authorization.server.domain.UserProfileTestBuilder.aUserProfile;
 import static com.ixortalk.test.util.Randomizer.nextString;
@@ -55,6 +56,7 @@ public class UserInfoControllerIntegrationTest extends AbstractSpringIntegration
                                 .withFirstName(FIRST_NAME_IXORTALK_PRINCIPAL)
                                 .withLastName(LAST_NAME_IXORTALK_PRINCIPAL)
                                 .withProfilePictureUrl(PROFILE_PICTURE_URL_IXORTALK_PRINCIPAL)
+                                .withAuthorities(authority(ROLE_IXORTALK_ROLE_1), authority(ROLE_IXORTALK_ROLE_2))
                                 .withLoginProvider(IXORTALK)
                                 .build()
                 );

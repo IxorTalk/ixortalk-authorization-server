@@ -24,11 +24,14 @@
 package com.ixortalk.authorization.server.security;
 
 import com.ixortalk.authorization.server.AbstractSpringIntegrationTest;
+import org.assertj.core.internal.IgnoringFieldsComparator;
 import org.junit.Test;
 
 import static com.ixortalk.authorization.server.TestConfigConstants.THIRD_PARTY_LOGIN_EVENTBRITE;
 import static com.ixortalk.authorization.server.TestConfigConstants.THIRD_PARTY_LOGIN_IXORTALK;
+import static com.ixortalk.authorization.server.domain.AuthorityTestBuilder.authority;
 import static com.ixortalk.authorization.server.domain.LoginProvider.EVENTBRITE;
+import static com.ixortalk.authorization.server.domain.LoginProvider.IXORTALK;
 import static com.ixortalk.authorization.server.domain.UserProfileTestBuilder.aUserProfile;
 import static com.ixortalk.test.util.Randomizer.nextString;
 import static com.jayway.restassured.RestAssured.given;
@@ -85,6 +88,32 @@ public class LoginIntegrationTest extends AbstractSpringIntegrationTest {
                         .extract().asString();
 
         assertThat(response).isEqualTo("hello " + PRINCIPAL_NAME_EVENTBRITE);
+    }
+
+    @Test
+    public void userProfileSaved() {
+        given()
+                .filter(sessionFilter)
+                .when()
+                .get("/hello");
+
+        performOAuth2Login(THIRD_PARTY_LOGIN_IXORTALK)
+                .then()
+                .statusCode(HTTP_OK);
+
+        assertThat(userProfileRepository.findByEmail(PRINCIPAL_NAME_IXORTALK))
+                .isPresent()
+                .usingValueComparator(new IgnoringFieldsComparator("id"))
+                .contains(
+                        aUserProfile()
+                                .withName(PRINCIPAL_NAME_IXORTALK)
+                                .withEmail(PRINCIPAL_NAME_IXORTALK)
+                                .withFirstName(FIRST_NAME_IXORTALK_PRINCIPAL)
+                                .withLastName(LAST_NAME_IXORTALK_PRINCIPAL)
+                                .withProfilePictureUrl(PROFILE_PICTURE_URL_IXORTALK_PRINCIPAL)
+                                .withAuthorities(authority(ROLE_IXORTALK_ROLE_1), authority(ROLE_IXORTALK_ROLE_2))
+                                .withLoginProvider(IXORTALK)
+                                .build());
     }
 
     @Test

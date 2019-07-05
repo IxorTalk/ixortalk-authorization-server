@@ -23,13 +23,17 @@
  */
 package com.ixortalk.authorization.server.security;
 
+import com.ixortalk.authorization.server.domain.Authority;
 import com.ixortalk.authorization.server.domain.UserProfile;
 import com.ixortalk.authorization.server.rest.UserProfileRepository;
 import org.springframework.context.ApplicationListener;
 import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 
 import javax.inject.Inject;
+
+import static java.util.stream.Collectors.toSet;
 
 public class AuthenticationSuccessEventListener implements ApplicationListener<AuthenticationSuccessEvent> {
 
@@ -56,6 +60,12 @@ public class AuthenticationSuccessEventListener implements ApplicationListener<A
                                 ixorTalkPrincipal.getFirstName(),
                                 ixorTalkPrincipal.getLastName(),
                                 ixorTalkPrincipal.getProfilePictureUrl(),
+                                oAuth2Authentication
+                                        .getAuthorities()
+                                        .stream()
+                                        .map(GrantedAuthority::getAuthority)
+                                        .map(Authority::authority)
+                                        .collect(toSet()),
                                 ixorTalkPrincipal.getLoginProvider()
                         )));
     }
