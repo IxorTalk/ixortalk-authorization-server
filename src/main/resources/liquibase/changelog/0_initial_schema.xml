@@ -125,4 +125,10 @@
 
     </changeSet>
 
+    <changeSet id="issue_11_add_profile_picture_url" author="wjans">
+        <addColumn tableName="user_profile">
+            <column name="profile_picture_url" type="varchar(255)" />
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

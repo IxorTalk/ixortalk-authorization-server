@@ -21,24 +21,52 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.ixortalk.authorization.server;
+package com.ixortalk.authorization.server.security;
 
-public enum TestConfigConstants {
+import org.springframework.security.core.GrantedAuthority;
 
-    TEST_CLIENT_NAME("test-client"),
-    TEST_CLIENT_ID("test-client-id"),
-    TEST_CLIENT_SECRET("test-client-secret"),
-    TEST_CLIENT_REDIRECT_URI("http://localhost/login"),
-    THIRD_PARTY_LOGIN_IXORTALK("third-party-ixortalk"),
-    THIRD_PARTY_LOGIN_EVENTBRITE("third-party-eventbrite");
+import java.util.Collection;
 
-    private String configValue;
+public class UserDetails implements org.springframework.security.core.userdetails.UserDetails {
 
-    TestConfigConstants(String configValue) {
-        this.configValue = configValue;
+    private String username;
+
+    public UserDetails(String username) {
+        this.username = username;
     }
 
-    public String configValue() {
-        return configValue;
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return null;
+    }
+
+    @Override
+    public String getPassword() {
+        return null;
+    }
+
+    @Override
+    public String getUsername() {
+        return this.username;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 }

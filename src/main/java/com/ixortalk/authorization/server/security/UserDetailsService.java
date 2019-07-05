@@ -21,24 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.ixortalk.authorization.server.rest;
+package com.ixortalk.authorization.server.security;
 
-import com.ixortalk.authorization.server.domain.UserProfile;
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.query.Param;
-import org.springframework.data.rest.core.annotation.RepositoryRestResource;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
-import java.util.Optional;
-
-@RepositoryRestResource(path = "user-profiles")
-@PreAuthorize("hasRole('ADMIN')")
-public interface UserProfileRestResource extends CrudRepository<UserProfile, Long> {
-
-    @PreAuthorize("hasRole('ADMIN') or #email == principal.name")
-    Optional<UserProfile> findByEmail(@Param("email") String email);
+public class UserDetailsService implements org.springframework.security.core.userdetails.UserDetailsService {
 
     @Override
-    @PreAuthorize("hasRole('ADMIN') or #userProfile.name == principal.name")
-    UserProfile save(@Param("userProfile") UserProfile userProfile);
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return new UserDetails(username);
+    }
 }

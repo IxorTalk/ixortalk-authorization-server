@@ -21,24 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.ixortalk.authorization.server;
+package com.ixortalk.authorization.server.rest;
 
-public enum TestConfigConstants {
+import com.ixortalk.authorization.server.domain.UserProfile;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 
-    TEST_CLIENT_NAME("test-client"),
-    TEST_CLIENT_ID("test-client-id"),
-    TEST_CLIENT_SECRET("test-client-secret"),
-    TEST_CLIENT_REDIRECT_URI("http://localhost/login"),
-    THIRD_PARTY_LOGIN_IXORTALK("third-party-ixortalk"),
-    THIRD_PARTY_LOGIN_EVENTBRITE("third-party-eventbrite");
+import java.util.Optional;
 
-    private String configValue;
+public interface UserProfileRepository extends CrudRepository<UserProfile, Long> {
 
-    TestConfigConstants(String configValue) {
-        this.configValue = configValue;
-    }
+    Optional<UserProfile> findByEmail(@Param("email") String email);
 
-    public String configValue() {
-        return configValue;
-    }
 }

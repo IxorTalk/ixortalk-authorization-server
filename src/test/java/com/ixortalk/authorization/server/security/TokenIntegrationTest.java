@@ -21,36 +21,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.ixortalk.authorization.server.rest;
+package com.ixortalk.authorization.server.security;
 
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
-import com.ixortalk.authorization.server.security.IxorTalkPrincipal;
-import org.springframework.security.core.GrantedAuthority;
+import com.ixortalk.authorization.server.AbstractSpringIntegrationTest;
+import org.junit.Test;
+import org.springframework.security.oauth2.common.OAuth2AccessToken;
 
-import java.util.Collection;
+import static org.assertj.core.api.Assertions.assertThat;
 
-class PrincipalDTO {
+public class TokenIntegrationTest extends AbstractSpringIntegrationTest {
 
-    private IxorTalkPrincipal ixorTalkPrincipal;
-    private Collection<GrantedAuthority> authorities;
-    private Object userInfo;
+    @Test
+    public void getAccessToken() {
+        OAuth2AccessToken oAuth2AccessToken = getAccessTokenWithAuthorizationCode();
 
-    PrincipalDTO(IxorTalkPrincipal ixorTalkPrincipal, Collection<GrantedAuthority> authorities, Object userInfo) {
-        this.ixorTalkPrincipal = ixorTalkPrincipal;
-        this.authorities = authorities;
-        this.userInfo = userInfo;
+        assertThat(oAuth2AccessToken).isNotNull().extracting(OAuth2AccessToken::getValue).isNotNull();
+        assertThat(oAuth2AccessToken.getRefreshToken()).isNotNull();
     }
 
-    @JsonUnwrapped
-    public IxorTalkPrincipal getIxorTalkPrincipal() {
-        return ixorTalkPrincipal;
+    @Test
+    public void refreshAccessToken() {
+
+        OAuth2AccessToken initialToken = getAccessTokenWithAuthorizationCode();
+        OAuth2AccessToken refreshedToken = getAccessTokenWithRefreshToken(initialToken.getRefreshToken());
+
+        assertThat(refreshedToken).isNotNull().extracting(OAuth2AccessToken::getValue).isNotNull();
+        assertThat(refreshedToken.getValue()).isNotEqualTo(initialToken.getValue());
     }
 
-    public Collection<GrantedAuthority> getAuthorities() {
-        return authorities;
-    }
-
-    public Object getUserInfo() {
-        return userInfo;
-    }
 }
+

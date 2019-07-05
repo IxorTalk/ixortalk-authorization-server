@@ -33,6 +33,7 @@ public class UserProfileTestBuilder extends ReflectionInstanceTestBuilder<UserPr
     private String email;
     private String firstName;
     private String lastName;
+    private String profilePictureUrl;
     private LoginProvider loginProvider;
 
     private UserProfileTestBuilder() {}
@@ -47,6 +48,7 @@ public class UserProfileTestBuilder extends ReflectionInstanceTestBuilder<UserPr
         setField(instance, "email", email);
         setField(instance, "firstName", firstName);
         setField(instance, "lastName", lastName);
+        setField(instance, "profilePictureUrl", profilePictureUrl);
         setField(instance, "loginProvider", loginProvider);
     }
 
@@ -67,6 +69,11 @@ public class UserProfileTestBuilder extends ReflectionInstanceTestBuilder<UserPr
 
     public UserProfileTestBuilder withLastName(String lastName) {
         this.lastName = lastName;
+        return this;
+    }
+
+    public UserProfileTestBuilder withProfilePictureUrl(String profilePictureUrl) {
+        this.profilePictureUrl = profilePictureUrl;
         return this;
     }
 

@@ -24,11 +24,13 @@
 package com.ixortalk.authorization.server.config;
 
 import com.ixortalk.authorization.server.domain.LoginProvider;
+import com.ixortalk.authorization.server.security.AuthenticationSuccessEventListener;
 import com.ixortalk.authorization.server.security.IxorTalkPrincipal;
 import com.ixortalk.authorization.server.security.UrlLogoutSuccessHandler;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.PrincipalExtractor;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.UserInfoTokenServices;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -66,6 +68,9 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Inject
     private OAuth2ClientContext oAuth2ClientContext;
+
+    @Inject
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -113,6 +118,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         tokenServices.setRestTemplate(oAuth2RestTemplate);
         tokenServices.setPrincipalExtractor(createPrincipalExtractor(principalExtractorType, oAuth2RestTemplate));
         filter.setTokenServices(tokenServices);
+        filter.setApplicationEventPublisher(applicationEventPublisher);
         return filter;
     }
 
@@ -141,5 +147,10 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         filterRegistrationBean.setFilter(new ForwardedHeaderFilter());
         filterRegistrationBean.setOrder(HIGHEST_PRECEDENCE);
         return filterRegistrationBean;
+    }
+
+    @Bean
+    public AuthenticationSuccessEventListener authenticationSuccessEventListener() {
+        return new AuthenticationSuccessEventListener();
     }
 }

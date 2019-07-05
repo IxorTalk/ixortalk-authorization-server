@@ -23,6 +23,7 @@
  */
 package com.ixortalk.authorization.server.config;
 
+import com.ixortalk.authorization.server.security.UserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
@@ -53,7 +54,7 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
 
     @Override
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) {
-        endpoints.tokenStore(tokenStore());
+        endpoints.tokenStore(tokenStore()).userDetailsService(new UserDetailsService());
     }
 
     @Override

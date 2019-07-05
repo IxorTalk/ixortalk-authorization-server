@@ -28,6 +28,12 @@ server:
 liquibase:
   change-log: classpath:liquibase/master.xml
 
+wiremock:
+  third-party-ixortalk:
+    port: 65101
+  third-party-eventbrite:
+    port: 65102
+
 spring:
   jpa:
     open-in-view: false
@@ -40,7 +46,7 @@ ixortalk:
     default-redirect-uri: /${server.context-path}/logout
     redirect-uri-param-name: redirect_uri
   security:
-    login-url: http://localhost/test-login
+    login-url: /login
     authentication:
       oauth-clients:
         test-client:
@@ -48,17 +54,30 @@ ixortalk:
           secret: test-client-secret
           tokenValidityInSeconds: 86400
           authorities: ROLE_ADMIN, ROLE_USER
+          redirect-uris: http://localhost/login
 
   third-party-logins:
-    test-third-party:
-      login-path: /login/test-third-party
+    third-party-ixortalk:
+      login-path: /login/third-party-ixortalk
       principal-extractor-type: ixortalk
       client-resource:
         resource:
-          user-info-uri: http://localhost:${wiremock.third-party.port}/users
+          user-info-uri: http://localhost:${wiremock.third-party-ixortalk.port}/user-info
         client:
-          access-token-uri: http://localhost:${wiremock.third-party.port}/oauth/token
-          user-authorization-uri: http://localhost:${wiremock.third-party.port}/oauth/authorize
-          client-id: third-party-client-id
-          client-secret: third-party-client-secret
+          access-token-uri: http://localhost:${wiremock.third-party-ixortalk.port}/oauth/token
+          user-authorization-uri: http://localhost:${wiremock.third-party-ixortalk.port}/oauth/authorize
+          client-id: third-party-ixortalk-client-id
+          client-secret: third-party-ixortalk-client-secret
+          grant-type: authorization_code
+    third-party-eventbrite:
+      login-path: /login/third-party-eventbrite
+      principal-extractor-type: eventbrite
+      client-resource:
+        resource:
+          user-info-uri: http://localhost:${wiremock.third-party-eventbrite.port}/user-info
+        client:
+          access-token-uri: http://localhost:${wiremock.third-party-eventbrite.port}/oauth/token
+          user-authorization-uri: http://localhost:${wiremock.third-party-eventbrite.port}/oauth/authorize
+          client-id: third-party-eventbrite-client-id
+          client-secret: third-party-eventbrite-client-secret
           grant-type: authorization_code
