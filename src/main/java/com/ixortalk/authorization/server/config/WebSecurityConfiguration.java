@@ -46,6 +46,7 @@ import org.springframework.security.web.authentication.LoginUrlAuthenticationEnt
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.filter.CompositeFilter;
 import org.springframework.web.filter.ForwardedHeaderFilter;
@@ -76,7 +77,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http
                 .antMatcher("/**").authorizeRequests()
-                .antMatchers("/login", "/actuator/**").permitAll()
+                .antMatchers("/login", "/actuator/**", "/error", "/retry-login").permitAll()
                 .anyRequest().authenticated()
                 .and()
                     .exceptionHandling().authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint(ixorTalkConfigProperties.getSecurity().getLoginUrl()))
@@ -85,7 +86,13 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                     .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
                     .logoutSuccessHandler(logoutSuccessHandler())
                 .and()
-                    .addFilterBefore(createCompositeSSOFilter(), BasicAuthenticationFilter.class);
+                    .addFilterBefore(createCompositeSSOFilter(), BasicAuthenticationFilter.class)
+                .requestCache().requestCache(requestCache());
+    }
+
+    @Bean
+    public HttpSessionRequestCache requestCache() {
+        return new HttpSessionRequestCache();
     }
 
     private LogoutSuccessHandler logoutSuccessHandler() {

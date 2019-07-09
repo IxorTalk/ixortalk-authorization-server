@@ -21,41 +21,39 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.ixortalk.authorization.server.security;
+package com.ixortalk.authorization.server.rest;
 
-import org.springframework.security.core.Authentication;
 import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.RedirectStrategy;
-import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
+import org.springframework.security.web.savedrequest.RequestCache;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-public class UrlLogoutSuccessHandler extends SimpleUrlLogoutSuccessHandler {
+import static java.util.Optional.ofNullable;
+import static org.springframework.security.oauth2.common.util.OAuth2Utils.REDIRECT_URI;
 
-    private final RedirectStrategy redirectStrategy;
+@Controller
+public class RetryLoginController {
 
-    private final String redirectUriIxortalkLogout;
+    @Inject
+    private RequestCache requestCache;
 
-    public UrlLogoutSuccessHandler(String redirectUriIxortalkLogout) {
-        this.redirectUriIxortalkLogout = redirectUriIxortalkLogout;
-        this.redirectStrategy = new DefaultRedirectStrategy();
-    }
+    private RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
 
-    @Override
-    public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
-        String targetUrl = determineTargetUrl(request, response);
-
-        if (response.isCommitted()) {
-            this.logger.debug("Response has already been committed. Unable to redirect to " + targetUrl);
-            return;
-        }
-
-        if (getTargetUrlParameter() != null) {
-            targetUrl = redirectUriIxortalkLogout + "?" + getTargetUrlParameter() + "=" + targetUrl;
-        }
-
-        this.redirectStrategy.sendRedirect(request, response, targetUrl);
+    @GetMapping("/retry-login")
+    public void doTheMagic(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        redirectStrategy.sendRedirect(
+                request,
+                response,
+                "/logout" +
+                        ofNullable(requestCache.getRequest(request, response))
+                                .filter(savedRequest -> savedRequest.getParameterMap().containsKey(REDIRECT_URI))
+                                .map(savedRequest -> "?" + REDIRECT_URI + "=" + savedRequest.getParameterValues(REDIRECT_URI)[0])
+                                .orElse(""));
     }
 }
