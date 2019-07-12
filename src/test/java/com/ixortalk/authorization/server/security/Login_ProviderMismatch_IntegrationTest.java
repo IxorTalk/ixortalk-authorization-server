@@ -42,6 +42,7 @@ import static wiremock.org.eclipse.jetty.http.HttpStatus.UNAUTHORIZED_401;
 public class Login_ProviderMismatch_IntegrationTest extends AbstractSpringIntegrationTest {
 
     public static final String INITIAL_REDIRECT_URI = "theInitialRedirectUri";
+    public static final String INITIAL_REQUEST_PATH = "/initial-request";
 
     @Before
     public void before() {
@@ -95,7 +96,7 @@ public class Login_ProviderMismatch_IntegrationTest extends AbstractSpringIntegr
                 .filter(sessionFilter)
                 .when()
                 .queryParam(REDIRECT_URI, INITIAL_REDIRECT_URI)
-                .get("/initial-request");
+                .get(INITIAL_REQUEST_PATH);
 
         loginWithMismatchedProvider();
 
@@ -108,29 +109,8 @@ public class Login_ProviderMismatch_IntegrationTest extends AbstractSpringIntegr
                         .statusCode(MOVED_TEMPORARILY_302)
                         .extract().header(LOCATION);
 
-        assertThat(retryLoginRedirect).endsWith("/logout?" + REDIRECT_URI + "=" + INITIAL_REDIRECT_URI);
-    }
+        assertThat(retryLoginRedirect).endsWith(INITIAL_REQUEST_PATH + "?" + REDIRECT_URI + "=" + INITIAL_REDIRECT_URI);
 
-    @Test
-    public void retry_noInitialRedirectURI() {
-
-        given()
-                .filter(sessionFilter)
-                .when()
-                .get("/initial-request");
-
-        loginWithMismatchedProvider();
-
-        String retryLoginRedirect =
-                given()
-                        .filter(sessionFilter)
-                        .when()
-                        .get("/retry-login")
-                        .then()
-                        .statusCode(MOVED_TEMPORARILY_302)
-                        .extract().header(LOCATION);
-
-        assertThat(retryLoginRedirect).endsWith("/logout");
     }
 
     @Test
@@ -147,6 +127,6 @@ public class Login_ProviderMismatch_IntegrationTest extends AbstractSpringIntegr
                         .statusCode(MOVED_TEMPORARILY_302)
                         .extract().header(LOCATION);
 
-        assertThat(retryLoginRedirect).endsWith("/logout");
+        assertThat(retryLoginRedirect).endsWith("/");
     }
 }

@@ -26,16 +26,18 @@ package com.ixortalk.authorization.server.rest;
 import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.savedrequest.RequestCache;
+import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import javax.inject.Inject;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
-import static org.springframework.security.oauth2.common.util.OAuth2Utils.REDIRECT_URI;
 
 @Controller
 public class RetryLoginController {
@@ -46,14 +48,12 @@ public class RetryLoginController {
     private RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
 
     @GetMapping("/retry-login")
-    public void doTheMagic(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void retryLogin(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        Optional<SavedRequest> initialRequest = ofNullable(requestCache.getRequest(request, response));
+        request.logout();
         redirectStrategy.sendRedirect(
                 request,
                 response,
-                "/logout" +
-                        ofNullable(requestCache.getRequest(request, response))
-                                .filter(savedRequest -> savedRequest.getParameterMap().containsKey(REDIRECT_URI))
-                                .map(savedRequest -> "?" + REDIRECT_URI + "=" + savedRequest.getParameterValues(REDIRECT_URI)[0])
-                                .orElse(""));
+                initialRequest.map(SavedRequest::getRedirectUrl).orElse("/"));
     }
 }
