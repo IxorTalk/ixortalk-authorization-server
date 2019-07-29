@@ -24,6 +24,8 @@
 package com.ixortalk.authorization.server.config;
 
 import com.ixortalk.authorization.server.security.UserDetailsService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
@@ -33,13 +35,21 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Aut
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
+import org.springframework.web.servlet.view.RedirectView;
 
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
 
 @Configuration
 @EnableAuthorizationServer
 public class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdapter {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationServerConfiguration.class);
 
     @Inject
     private IxorTalkConfigProperties ixorTalkConfigProperties;
@@ -54,7 +64,28 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
 
     @Override
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) {
-        endpoints.tokenStore(tokenStore()).userDetailsService(new UserDetailsService());
+        endpoints
+                .tokenStore(tokenStore())
+                .userDetailsService(new UserDetailsService())
+                // See https://github.com/spring-projects/spring-security-oauth/issues/140
+                .addInterceptor(new HandlerInterceptorAdapter() {
+                    @Override
+                    public void postHandle(HttpServletRequest request,
+                                           HttpServletResponse response, Object handler,
+                                           ModelAndView modelAndView) throws Exception {
+                        if (modelAndView != null
+                                && modelAndView.getView() instanceof RedirectView) {
+                            RedirectView redirect = (RedirectView) modelAndView.getView();
+                            String url = redirect.getUrl();
+                            if (url.contains("code=") || url.contains("error=")) {
+                                HttpSession session = request.getSession(false);
+                                if (session != null) {
+                                    session.invalidate();
+                                }
+                            }
+                        }
+                    }
+                });
     }
 
     @Override

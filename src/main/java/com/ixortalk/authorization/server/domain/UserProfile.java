@@ -33,10 +33,9 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import java.util.Set;
 
+import static com.google.common.collect.Sets.newHashSet;
 import static javax.persistence.EnumType.STRING;
 import static javax.persistence.FetchType.EAGER;
-import static org.apache.commons.lang3.Validate.isTrue;
-import static org.hibernate.validator.internal.util.CollectionHelper.newHashSet;
 
 @Entity
 public class UserProfile {
@@ -116,7 +115,9 @@ public class UserProfile {
     }
 
     public UserProfile assertCorrectProvider(LoginProvider loginProvider) {
-        isTrue(this.loginProvider == loginProvider, "Different profile already exist for principal " + getName());
+        if (this.loginProvider != loginProvider) {
+            throw new ProfileConflictException("Different profile (" + this.loginProvider + ") already exists for principal " + getName());
+        }
         return this;
     }
 }
