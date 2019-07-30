@@ -26,11 +26,59 @@ package com.ixortalk.authorization.server.rest;
 import com.ixortalk.authorization.server.domain.UserProfile;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+import org.springframework.data.rest.core.annotation.RestResource;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.Optional;
 
-public interface UserProfileRepository extends CrudRepository<UserProfile, Long> {
+@RepositoryRestResource(path = "/user-profiles")
+public interface UserProfileRestResource extends CrudRepository<UserProfile, Long> {
 
+    @RestResource(exported = false)
     Optional<UserProfile> findByEmail(@Param("email") String email);
 
+    @Override
+    @RestResource(exported = false)
+    <S extends UserProfile> S save(S s);
+
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    <S extends UserProfile> Iterable<S> save(Iterable<S> iterable);
+
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    UserProfile findOne(Long aLong);
+
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    boolean exists(Long aLong);
+
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    Iterable<UserProfile> findAll();
+
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    Iterable<UserProfile> findAll(Iterable<Long> iterable);
+
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    long count();
+
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    void delete(Long aLong);
+
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    void delete(UserProfile userProfile);
+
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    void delete(Iterable<? extends UserProfile> iterable);
+
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    void deleteAll();
 }

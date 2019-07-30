@@ -40,7 +40,7 @@ import static wiremock.org.eclipse.jetty.http.HttpStatus.MOVED_TEMPORARILY_302;
 
 public class LoginIntegrationTest extends AbstractSpringIntegrationTest {
 
-   @Test
+    @Test
     public void loginRedirect() {
         String location =
                 given()
@@ -98,7 +98,7 @@ public class LoginIntegrationTest extends AbstractSpringIntegrationTest {
                 .then()
                 .statusCode(HTTP_OK);
 
-        assertThat(userProfileRepository.findByEmail(PRINCIPAL_NAME_IXORTALK))
+        assertThat(userProfileRestResource.findByEmail(PRINCIPAL_NAME_IXORTALK))
                 .isPresent()
                 .usingValueComparator(new IgnoringFieldsComparator("id"))
                 .contains(

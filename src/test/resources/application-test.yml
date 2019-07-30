@@ -49,11 +49,17 @@ ixortalk:
     login-url: /login
     authentication:
       oauth-clients:
-        test-client:
-          clientid: test-client-id
-          secret: test-client-secret
+        admin-client:
+          clientid: admin-client-id
+          secret: admin-client-secret
           tokenValidityInSeconds: 86400
-          authorities: ROLE_ADMIN, ROLE_USER
+          authorities: ROLE_ADMIN
+          redirect-uris: http://localhost/login
+        user-client:
+          clientid: user-client-id
+          secret: user-client-secret
+          tokenValidityInSeconds: 86400
+          authorities: ROLE_USER
           redirect-uris: http://localhost/login
 
   third-party-logins:
