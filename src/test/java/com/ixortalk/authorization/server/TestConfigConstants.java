@@ -25,10 +25,14 @@ package com.ixortalk.authorization.server;
 
 public enum TestConfigConstants {
 
-    TEST_CLIENT_NAME("test-client"),
-    TEST_CLIENT_ID("test-client-id"),
-    TEST_CLIENT_SECRET("test-client-secret"),
-    TEST_CLIENT_REDIRECT_URI("http://localhost/login"),
+    ADMIN_CLIENT_NAME("admin-client"),
+    ADMIN_CLIENT_ID("admin-client-id"),
+    ADMIN_CLIENT_SECRET("admin-client-secret"),
+    ADMIN_CLIENT_REDIRECT_URI("http://localhost/login"),
+
+    USER_CLIENT_ID("user-client-id"),
+    USER_CLIENT_SECRET("user-client-secret"),
+
     THIRD_PARTY_LOGIN_IXORTALK("third-party-ixortalk"),
     THIRD_PARTY_LOGIN_EVENTBRITE("third-party-eventbrite");
 

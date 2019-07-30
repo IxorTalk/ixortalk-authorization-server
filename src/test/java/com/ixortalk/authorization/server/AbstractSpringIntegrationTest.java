@@ -28,11 +28,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.extension.responsetemplating.ResponseTemplateTransformer;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.ixortalk.authorization.server.config.IxorTalkConfigProperties;
-import com.ixortalk.authorization.server.rest.UserProfileRepository;
+import com.ixortalk.authorization.server.rest.UserProfileRestResource;
 import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.config.RedirectConfig;
+import com.jayway.restassured.builder.RequestSpecBuilder;
 import com.jayway.restassured.filter.session.SessionFilter;
 import com.jayway.restassured.response.Response;
+import com.jayway.restassured.specification.RequestSpecification;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
 import org.junit.After;
@@ -43,6 +44,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.restdocs.JUnitRestDocumentation;
+import org.springframework.restdocs.headers.HeaderDescriptor;
+import org.springframework.restdocs.restassured.operation.preprocess.UriModifyingOperationPreprocessor;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2RefreshToken;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -63,19 +67,30 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
-import static com.ixortalk.authorization.server.TestConfigConstants.TEST_CLIENT_ID;
-import static com.ixortalk.authorization.server.TestConfigConstants.TEST_CLIENT_REDIRECT_URI;
-import static com.ixortalk.authorization.server.TestConfigConstants.TEST_CLIENT_SECRET;
+import static com.google.common.net.HttpHeaders.X_FORWARDED_HOST;
+import static com.google.common.net.HttpHeaders.X_FORWARDED_PORT;
+import static com.google.common.net.HttpHeaders.X_FORWARDED_PROTO;
+import static com.ixortalk.authorization.server.TestConfigConstants.ADMIN_CLIENT_ID;
+import static com.ixortalk.authorization.server.TestConfigConstants.ADMIN_CLIENT_REDIRECT_URI;
+import static com.ixortalk.authorization.server.TestConfigConstants.ADMIN_CLIENT_SECRET;
 import static com.ixortalk.authorization.server.TestConfigConstants.THIRD_PARTY_LOGIN_IXORTALK;
+import static com.ixortalk.authorization.server.TestConfigConstants.USER_CLIENT_ID;
+import static com.ixortalk.authorization.server.TestConfigConstants.USER_CLIENT_SECRET;
+import static com.ixortalk.test.oauth2.OAuth2TestTokens.getAccessToken;
 import static com.ixortalk.test.util.Randomizer.nextString;
 import static com.jayway.restassured.RestAssured.given;
+import static com.jayway.restassured.config.RedirectConfig.redirectConfig;
 import static com.jayway.restassured.config.RestAssuredConfig.config;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static java.util.Arrays.stream;
 import static java.util.Collections.singletonMap;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
+import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
+import static org.springframework.restdocs.restassured.RestAssuredRestDocumentation.documentationConfiguration;
+import static org.springframework.restdocs.restassured.operation.preprocess.RestAssuredPreprocessors.modifyUris;
 import static wiremock.org.apache.http.HttpHeaders.LOCATION;
 import static wiremock.org.eclipse.jetty.http.HttpStatus.MOVED_TEMPORARILY_302;
+import static wiremock.org.eclipse.jetty.util.URIUtil.HTTPS;
 
 @SpringBootTest(classes = AuthorizationServerApplication.class, webEnvironment = RANDOM_PORT)
 @ActiveProfiles("test")
@@ -83,16 +98,22 @@ import static wiremock.org.eclipse.jetty.http.HttpStatus.MOVED_TEMPORARILY_302;
 @RunWith(SpringRunner.class)
 public abstract class AbstractSpringIntegrationTest {
 
-    public static final String PRINCIPAL_NAME_IXORTALK = nextString("principalNameIxorTalk");
-    public static final String FIRST_NAME_IXORTALK_PRINCIPAL = nextString("firstName");
-    public static final String LAST_NAME_IXORTALK_PRINCIPAL = nextString("lastName");
+    protected static final String PRINCIPAL_NAME_IXORTALK = nextString("principalNameIxorTalk");
+    protected static final String FIRST_NAME_IXORTALK_PRINCIPAL = nextString("firstName");
+    protected static final String LAST_NAME_IXORTALK_PRINCIPAL = nextString("lastName");
 
-    public static final String PRINCIPAL_NAME_EVENTBRITE = nextString("principalNameEventbrite");
-    public static final String FIRST_NAME_EVENTBRITE_PRINCIPAL = nextString("first_name_eventbrite");
-    public static final String LAST_NAME_EVENTBRITE_PRINCIPAL = nextString("last_name_eventbrite");
-    public static final String PROFILE_PICTURE_URL_IXORTALK_PRINCIPAL = nextString("profilePictureUrl");
-    public static final String ROLE_IXORTALK_ROLE_1 = "ROLE_IXORTALK_ROLE_1";
-    public static final String ROLE_IXORTALK_ROLE_2 = "ROLE_IXORTALK_ROLE_2";
+    protected static final String PRINCIPAL_NAME_EVENTBRITE = nextString("principalNameEventbrite");
+    private static final String FIRST_NAME_EVENTBRITE_PRINCIPAL = nextString("first_name_eventbrite");
+    private static final String LAST_NAME_EVENTBRITE_PRINCIPAL = nextString("last_name_eventbrite");
+    protected static final String PROFILE_PICTURE_URL_IXORTALK_PRINCIPAL = nextString("profilePictureUrl");
+    protected static final String ROLE_IXORTALK_ROLE_1 = "ROLE_IXORTALK_ROLE_1";
+    protected static final String ROLE_IXORTALK_ROLE_2 = "ROLE_IXORTALK_ROLE_2";
+
+    private static final String SCHEME = HTTPS;
+    private static final String HOST = "ixortalk.com";
+
+    @Rule
+    public JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation("target/generated-snippets");
 
     @Rule
     public WireMockRule thirdPartyIxorTalkWireMockRule = new WireMockRule(
@@ -106,8 +127,8 @@ public abstract class AbstractSpringIntegrationTest {
                     .port(65102)
                     .extensions(new ResponseTemplateTransformer(false)));
 
-    protected Map<String, Object> thirdPartyPrincipalIxorTalk;
-    protected Map<String, Object> thirdPartyPrincipalEventbrite;
+    private Map<String, Object> thirdPartyPrincipalIxorTalk;
+    private Map<String, Object> thirdPartyPrincipalEventbrite;
 
     protected SessionFilter sessionFilter;
 
@@ -118,7 +139,7 @@ public abstract class AbstractSpringIntegrationTest {
     protected IxorTalkConfigProperties ixorTalkConfigProperties;
 
     @Inject
-    protected UserProfileRepository userProfileRepository;
+    protected UserProfileRestResource userProfileRestResource;
 
     @Inject
     protected ObjectMapper objectMapper;
@@ -128,6 +149,8 @@ public abstract class AbstractSpringIntegrationTest {
 
     @Value("${server.context-path}")
     protected String contextPath;
+
+    protected RequestSpecification restDocSpecification;
 
     private static String extractAuthorizationCodeFromRedirect(String location) throws URISyntaxException {
         return new URIBuilder(location)
@@ -140,14 +163,19 @@ public abstract class AbstractSpringIntegrationTest {
     }
 
     @Before
-    public final void setupRestAssuredAndOrganizationMocking() {
+    public final void setupRestAssuredAndOrganizationMocking() throws JsonProcessingException {
         RestAssured.port = port;
         RestAssured.basePath = contextPath;
-        RestAssured.config = config().redirect(RedirectConfig.redirectConfig().followRedirects(false));
-    }
+        RestAssured.config = config().redirect(redirectConfig().followRedirects(false));
+        // Not set by default here since the headers interfere with Spring Security redirect logic
+        restDocSpecification =
+                new RequestSpecBuilder()
+                        .addFilter(documentationConfiguration(this.restDocumentation))
+                        .addHeader(X_FORWARDED_PROTO, SCHEME)
+                        .addHeader(X_FORWARDED_HOST, HOST)
+                        .addHeader(X_FORWARDED_PORT, "")
+                        .build();
 
-    @Before
-    public void setupThirdPartyLogins() throws JsonProcessingException {
         Map<String, Object> userInfoIxorTalk = newHashMap();
         userInfoIxorTalk.put("profilePictureUrl", PROFILE_PICTURE_URL_IXORTALK_PRINCIPAL);
         userInfoIxorTalk.put("firstName", FIRST_NAME_IXORTALK_PRINCIPAL);
@@ -227,10 +255,10 @@ public abstract class AbstractSpringIntegrationTest {
     protected OAuth2AccessToken getAccessTokenWithAuthorizationCode() {
         return given()
                 .filter(sessionFilter)
-                .auth().preemptive().basic(TEST_CLIENT_ID.configValue(), TEST_CLIENT_SECRET.configValue())
+                .auth().preemptive().basic(ADMIN_CLIENT_ID.configValue(), ADMIN_CLIENT_SECRET.configValue())
                 .parameters("grant_type", "authorization_code")
                 .parameters("code", getAuthorizationCode(THIRD_PARTY_LOGIN_IXORTALK))
-                .parameters("redirect_uri", TEST_CLIENT_REDIRECT_URI.configValue())
+                .parameters("redirect_uri", ADMIN_CLIENT_REDIRECT_URI.configValue())
                 .when()
                 .post("/oauth/token")
                 .then()
@@ -241,7 +269,7 @@ public abstract class AbstractSpringIntegrationTest {
     protected OAuth2AccessToken getAccessTokenWithRefreshToken(OAuth2RefreshToken refreshToken) {
         return given()
                 .filter(sessionFilter)
-                .auth().preemptive().basic(TEST_CLIENT_ID.configValue(), TEST_CLIENT_SECRET.configValue())
+                .auth().preemptive().basic(ADMIN_CLIENT_ID.configValue(), ADMIN_CLIENT_SECRET.configValue())
                 .parameters("grant_type", "refresh_token")
                 .parameters("refresh_token", refreshToken.getValue())
                 .when()
@@ -252,12 +280,12 @@ public abstract class AbstractSpringIntegrationTest {
                 .extract().as(OAuth2AccessToken.class);
     }
 
-    private String getAuthorizationCode(TestConfigConstants thirdPartyLoginProvider)  {
+    private String getAuthorizationCode(TestConfigConstants thirdPartyLoginProvider) {
         given()
                 .filter(sessionFilter)
                 .urlEncodingEnabled(false)
-                .parameters("client_id", TEST_CLIENT_ID.configValue())
-                .parameters("redirect_uri", TEST_CLIENT_REDIRECT_URI.configValue())
+                .parameters("client_id", ADMIN_CLIENT_ID.configValue())
+                .parameters("redirect_uri", ADMIN_CLIENT_REDIRECT_URI.configValue())
                 .parameters("response_type", "code")
                 .parameters("state", nextString("state-"))
                 .when()
@@ -273,4 +301,21 @@ public abstract class AbstractSpringIntegrationTest {
             throw new IllegalStateException("Error retrieving authorization code from redirect: " + e.getMessage(), e);
         }
     }
+
+    protected static OAuth2AccessToken adminToken() {
+        return getAccessToken(ADMIN_CLIENT_ID.configValue(), ADMIN_CLIENT_SECRET.configValue());
+    }
+
+    protected static OAuth2AccessToken userToken() {
+        return getAccessToken(USER_CLIENT_ID.configValue(), USER_CLIENT_SECRET.configValue());
+    }
+
+    protected static UriModifyingOperationPreprocessor staticUris() {
+        return modifyUris().scheme(SCHEME).host(HOST).removePort();
+    }
+
+    protected static HeaderDescriptor describeAuthorizationTokenHeader() {
+        return headerWithName("Authorization").description("The bearer token needed to authorize this request.");
+    }
+
 }

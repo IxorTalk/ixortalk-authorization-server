@@ -46,7 +46,7 @@ public class Login_ProviderMismatch_IntegrationTest extends AbstractSpringIntegr
 
     @Before
     public void before() {
-        userProfileRepository.save(
+        userProfileRestResource.save(
                 aUserProfile()
                         .withName(PRINCIPAL_NAME_IXORTALK)
                         .withEmail(PRINCIPAL_NAME_IXORTALK)

@@ -25,7 +25,7 @@ package com.ixortalk.authorization.server.security;
 
 import com.ixortalk.authorization.server.domain.Authority;
 import com.ixortalk.authorization.server.domain.UserProfile;
-import com.ixortalk.authorization.server.rest.UserProfileRepository;
+import com.ixortalk.authorization.server.rest.UserProfileRestResource;
 import org.springframework.context.ApplicationListener;
 import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
 import org.springframework.security.core.GrantedAuthority;
@@ -38,7 +38,7 @@ import static java.util.stream.Collectors.toSet;
 public class AuthenticationSuccessEventListener implements ApplicationListener<AuthenticationSuccessEvent> {
 
     @Inject
-    private UserProfileRepository userProfileRepository;
+    private UserProfileRestResource userProfileRestResource;
 
     @Override
     public void onApplicationEvent(AuthenticationSuccessEvent event) throws IllegalArgumentException {
@@ -51,9 +51,9 @@ public class AuthenticationSuccessEventListener implements ApplicationListener<A
 
         IxorTalkPrincipal ixorTalkPrincipal = (IxorTalkPrincipal) oAuth2Authentication.getPrincipal();
 
-        userProfileRepository.findByEmail(ixorTalkPrincipal.getName())
+        userProfileRestResource.findByEmail(ixorTalkPrincipal.getName())
                 .map(userProfile -> userProfile.assertCorrectProvider(ixorTalkPrincipal.getLoginProvider()))
-                .orElseGet(() -> userProfileRepository.save(
+                .orElseGet(() -> userProfileRestResource.save(
                         new UserProfile(
                                 ixorTalkPrincipal.getName(),
                                 ixorTalkPrincipal.getName(),

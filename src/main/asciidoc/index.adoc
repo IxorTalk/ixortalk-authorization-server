@@ -1,0 +1,34 @@
+= Authorization Server
+:doctype: book
+:icons: font
+:toc: left
+:toclevels: 4
+:sectlinks:
+:source-highlighter: highlightjs
+
+= User Profiles
+
+== Get All
+
+Get all user profiles (admin privileges required)
+
+=== Request
+
+Via curl:
+include::{snippets}/user-profiles/get-all/as-admin/curl-request.adoc[]
+
+HTTP request:
+include::{snippets}/user-profiles/get-all/as-admin/http-request.adoc[]
+
+==== Request Headers
+include::{snippets}/user-profiles/get-all/as-admin/request-headers.adoc[]
+
+=== Response
+
+With admin privileges
+
+include::{snippets}/user-profiles/get-all/as-admin/http-response.adoc[]
+
+With user (or other non admin) privileges
+
+include::{snippets}/user-profiles/get-all/as-user/http-response.adoc[]

@@ -27,7 +27,7 @@ import com.ixortalk.authorization.server.AbstractSpringIntegrationTest;
 import org.junit.Test;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 
-import static com.ixortalk.authorization.server.TestConfigConstants.TEST_CLIENT_NAME;
+import static com.ixortalk.authorization.server.TestConfigConstants.ADMIN_CLIENT_NAME;
 import static com.jayway.restassured.RestAssured.given;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,8 +42,8 @@ public class OAuth2ClientsIntegrationTest extends AbstractSpringIntegrationTest 
                         .auth()
                         .preemptive()
                         .basic(
-                                ixorTalkConfigProperties.getSecurity().getAuthentication().getOauthClients().get(TEST_CLIENT_NAME.configValue()).getClientid(),
-                                ixorTalkConfigProperties.getSecurity().getAuthentication().getOauthClients().get(TEST_CLIENT_NAME.configValue()).getSecret())
+                                ixorTalkConfigProperties.getSecurity().getAuthentication().getOauthClients().get(ADMIN_CLIENT_NAME.configValue()).getClientid(),
+                                ixorTalkConfigProperties.getSecurity().getAuthentication().getOauthClients().get(ADMIN_CLIENT_NAME.configValue()).getSecret())
                         .when()
                         .post("/oauth/token")
                         .then().statusCode(SC_OK)

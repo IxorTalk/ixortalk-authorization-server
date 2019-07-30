@@ -36,11 +36,11 @@ import static org.springframework.http.ResponseEntity.ok;
 public class UserInfoController {
 
     @Inject
-    private UserProfileRepository userProfileRepository;
+    private UserProfileRestResource userProfileRestResource;
 
     @RequestMapping("/user")
     public Object user(Principal principal) {
-        return userProfileRepository.findByEmail(principal.getName())
+        return userProfileRestResource.findByEmail(principal.getName())
                 .<ResponseEntity<?>>map(ResponseEntity::ok)
                 .orElse(ok(principal));
     }

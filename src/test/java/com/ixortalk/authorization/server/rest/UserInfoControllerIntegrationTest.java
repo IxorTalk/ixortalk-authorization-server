@@ -66,7 +66,7 @@ public class UserInfoControllerIntegrationTest extends AbstractSpringIntegration
     public void getUserInfo_ProfileExists() {
 
         UserProfile persistedUserProfile =
-                userProfileRepository.save(
+                userProfileRestResource.save(
                         aUserProfile()
                                 .withName(PRINCIPAL_NAME_IXORTALK)
                                 .withEmail(PRINCIPAL_NAME_IXORTALK)
@@ -92,7 +92,7 @@ public class UserInfoControllerIntegrationTest extends AbstractSpringIntegration
     public void getUserInfo_WithRefreshToken() {
 
         UserProfile persistedUserProfile =
-                userProfileRepository.save(
+                userProfileRestResource.save(
                         aUserProfile()
                                 .withName(PRINCIPAL_NAME_IXORTALK)
                                 .withEmail(PRINCIPAL_NAME_IXORTALK)
