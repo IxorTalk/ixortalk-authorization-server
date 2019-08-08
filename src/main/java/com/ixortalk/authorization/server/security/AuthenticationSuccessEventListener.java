@@ -51,22 +51,39 @@ public class AuthenticationSuccessEventListener implements ApplicationListener<A
 
         IxorTalkPrincipal ixorTalkPrincipal = (IxorTalkPrincipal) oAuth2Authentication.getPrincipal();
 
-        userProfileRestResource.findByEmail(ixorTalkPrincipal.getName())
-                .map(userProfile -> userProfile.assertCorrectProvider(ixorTalkPrincipal.getLoginProvider()))
-                .orElseGet(() -> userProfileRestResource.save(
-                        new UserProfile(
-                                ixorTalkPrincipal.getName(),
-                                ixorTalkPrincipal.getName(),
-                                ixorTalkPrincipal.getFirstName(),
-                                ixorTalkPrincipal.getLastName(),
-                                ixorTalkPrincipal.getProfilePictureUrl(),
-                                oAuth2Authentication
-                                        .getAuthorities()
-                                        .stream()
-                                        .map(GrantedAuthority::getAuthority)
-                                        .map(Authority::authority)
-                                        .collect(toSet()),
-                                ixorTalkPrincipal.getLoginProvider()
-                        )));
+
+        userProfileRestResource.save(
+                userProfileRestResource.findByEmail(ixorTalkPrincipal.getName())
+                        .map(userProfile -> userProfile.assertCorrectProvider(ixorTalkPrincipal.getLoginProvider()))
+                        .map(existing ->
+                                existing.update(
+                                        ixorTalkPrincipal.getName(),
+                                        ixorTalkPrincipal.getName(),
+                                        ixorTalkPrincipal.getFirstName(),
+                                        ixorTalkPrincipal.getLastName(),
+                                        ixorTalkPrincipal.getProfilePictureUrl(),
+                                        oAuth2Authentication
+                                                .getAuthorities()
+                                                .stream()
+                                                .map(GrantedAuthority::getAuthority)
+                                                .map(Authority::authority)
+                                                .collect(toSet()),
+                                        ixorTalkPrincipal.getLoginProvider()
+                                ))
+                        .orElseGet(() ->
+                                new UserProfile(
+                                        ixorTalkPrincipal.getName(),
+                                        ixorTalkPrincipal.getName(),
+                                        ixorTalkPrincipal.getFirstName(),
+                                        ixorTalkPrincipal.getLastName(),
+                                        ixorTalkPrincipal.getProfilePictureUrl(),
+                                        oAuth2Authentication
+                                                .getAuthorities()
+                                                .stream()
+                                                .map(GrantedAuthority::getAuthority)
+                                                .map(Authority::authority)
+                                                .collect(toSet()),
+                                        ixorTalkPrincipal.getLoginProvider()
+                                )));
     }
 }

@@ -65,16 +65,15 @@ public class UserInfoControllerIntegrationTest extends AbstractSpringIntegration
     @Test
     public void getUserInfo_ProfileExists() {
 
-        UserProfile persistedUserProfile =
-                userProfileRestResource.save(
-                        aUserProfile()
-                                .withName(PRINCIPAL_NAME_IXORTALK)
-                                .withEmail(PRINCIPAL_NAME_IXORTALK)
-                                .withFirstName(nextString("persistedFirstName"))
-                                .withLastName(nextString("persistedLastName"))
-                                .withProfilePictureUrl(nextString("persistedProfilePictureUrl"))
-                                .withLoginProvider(IXORTALK)
-                                .build());
+        userProfileRestResource.save(
+                aUserProfile()
+                        .withName(PRINCIPAL_NAME_IXORTALK)
+                        .withEmail(PRINCIPAL_NAME_IXORTALK)
+                        .withFirstName(nextString("persistedFirstName"))
+                        .withLastName(nextString("persistedLastName"))
+                        .withProfilePictureUrl(nextString("persistedProfilePictureUrl"))
+                        .withLoginProvider(IXORTALK)
+                        .build());
 
         UserProfile userProfile =
                 given()
@@ -85,22 +84,33 @@ public class UserInfoControllerIntegrationTest extends AbstractSpringIntegration
                         .statusCode(HTTP_OK)
                         .extract().as(UserProfile.class);
 
-        assertThat(userProfile).isEqualToIgnoringGivenFields(persistedUserProfile, "id");
+        assertThat(userProfile)
+                .isEqualToIgnoringGivenFields(
+                        aUserProfile()
+                                .withName(PRINCIPAL_NAME_IXORTALK)
+                                .withEmail(PRINCIPAL_NAME_IXORTALK)
+                                .withFirstName(FIRST_NAME_IXORTALK_PRINCIPAL)
+                                .withLastName(LAST_NAME_IXORTALK_PRINCIPAL)
+                                .withProfilePictureUrl(PROFILE_PICTURE_URL_IXORTALK_PRINCIPAL)
+                                .withAuthorities(authority(ROLE_IXORTALK_ROLE_1), authority(ROLE_IXORTALK_ROLE_2))
+                                .withLoginProvider(IXORTALK)
+                                .build(),
+                        "id"
+                );
     }
 
     @Test
     public void getUserInfo_WithRefreshToken() {
 
-        UserProfile persistedUserProfile =
-                userProfileRestResource.save(
-                        aUserProfile()
-                                .withName(PRINCIPAL_NAME_IXORTALK)
-                                .withEmail(PRINCIPAL_NAME_IXORTALK)
-                                .withFirstName(nextString("persistedFirstName"))
-                                .withLastName(nextString("persistedLastName"))
-                                .withProfilePictureUrl(nextString("persistedProfilePictureUrl"))
-                                .withLoginProvider(IXORTALK)
-                                .build());
+        userProfileRestResource.save(
+                aUserProfile()
+                        .withName(PRINCIPAL_NAME_IXORTALK)
+                        .withEmail(PRINCIPAL_NAME_IXORTALK)
+                        .withFirstName(nextString("persistedFirstName"))
+                        .withLastName(nextString("persistedLastName"))
+                        .withProfilePictureUrl(nextString("persistedProfilePictureUrl"))
+                        .withLoginProvider(IXORTALK)
+                        .build());
 
         UserProfile userProfile =
                 given()
@@ -111,6 +121,18 @@ public class UserInfoControllerIntegrationTest extends AbstractSpringIntegration
                         .statusCode(HTTP_OK)
                         .extract().as(UserProfile.class);
 
-        assertThat(userProfile).isEqualToIgnoringGivenFields(persistedUserProfile, "id");
+        assertThat(userProfile)
+                .isEqualToIgnoringGivenFields(
+                        aUserProfile()
+                                .withName(PRINCIPAL_NAME_IXORTALK)
+                                .withEmail(PRINCIPAL_NAME_IXORTALK)
+                                .withFirstName(FIRST_NAME_IXORTALK_PRINCIPAL)
+                                .withLastName(LAST_NAME_IXORTALK_PRINCIPAL)
+                                .withProfilePictureUrl(PROFILE_PICTURE_URL_IXORTALK_PRINCIPAL)
+                                .withAuthorities(authority(ROLE_IXORTALK_ROLE_1), authority(ROLE_IXORTALK_ROLE_2))
+                                .withLoginProvider(IXORTALK)
+                                .build(),
+                        "id"
+                );
     }
 }

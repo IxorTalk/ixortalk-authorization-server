@@ -86,6 +86,24 @@ public class UserProfile {
         this.loginProvider = loginProvider;
     }
 
+    public UserProfile update(
+            String name,
+            String email,
+            String firstName,
+            String lastName,
+            String profilePictureUrl,
+            Set<Authority> authorities,
+            LoginProvider loginProvider) {
+        this.name = name;
+        this.email = email;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.profilePictureUrl = profilePictureUrl;
+        this.authorities = authorities;
+        this.loginProvider = loginProvider;
+        return this;
+    }
+
     public String getName() {
         return name;
     }
@@ -116,7 +134,7 @@ public class UserProfile {
 
     public UserProfile assertCorrectProvider(LoginProvider loginProvider) {
         if (this.loginProvider != loginProvider) {
-            throw new ProfileConflictException("Different profile (" + this.loginProvider + ") already exists for principal " + getName());
+            throw new ProfileConflictException("Login failed because a duplicate profile was detected for " + getName() + ": " + this.loginProvider + " & " + loginProvider);
         }
         return this;
     }
