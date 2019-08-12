@@ -49,6 +49,7 @@ import org.springframework.restdocs.headers.HeaderDescriptor;
 import org.springframework.restdocs.restassured.operation.preprocess.UriModifyingOperationPreprocessor;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2RefreshToken;
+import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -88,6 +89,9 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.restassured.RestAssuredRestDocumentation.documentationConfiguration;
 import static org.springframework.restdocs.restassured.operation.preprocess.RestAssuredPreprocessors.modifyUris;
+import static org.springframework.security.oauth2.common.DefaultOAuth2AccessToken.valueOf;
+import static org.springframework.security.oauth2.common.OAuth2AccessToken.ACCESS_TOKEN;
+import static org.springframework.security.oauth2.common.OAuth2AccessToken.REFRESH_TOKEN;
 import static wiremock.org.apache.http.HttpHeaders.LOCATION;
 import static wiremock.org.eclipse.jetty.http.HttpStatus.MOVED_TEMPORARILY_302;
 import static wiremock.org.eclipse.jetty.util.URIUtil.HTTPS;
@@ -111,6 +115,8 @@ public abstract class AbstractSpringIntegrationTest {
 
     private static final String SCHEME = HTTPS;
     private static final String HOST = "ixortalk.com";
+    public static final String IXORTALK_THIRD_PARTY_ACCESS_TOKEN = nextString("ixortalk-thirdparty-access-token");
+    public static final String IXORTALK_THIRD_PARTY_REFRESH_TOKEN = nextString("ixortalk-thirdparty-refresh-token");
 
     @Rule
     public JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation("target/generated-snippets");
@@ -127,7 +133,7 @@ public abstract class AbstractSpringIntegrationTest {
                     .port(65102)
                     .extensions(new ResponseTemplateTransformer(false)));
 
-    private Map<String, Object> thirdPartyPrincipalIxorTalk;
+    protected Map<String, Object> thirdPartyPrincipalIxorTalk;
     private Map<String, Object> thirdPartyPrincipalEventbrite;
 
     protected SessionFilter sessionFilter;
@@ -144,6 +150,9 @@ public abstract class AbstractSpringIntegrationTest {
     @Inject
     protected ObjectMapper objectMapper;
 
+    @Inject
+    protected TokenStore thirdPartyTokenStore;
+
     @LocalServerPort
     protected int port;
 
@@ -151,6 +160,7 @@ public abstract class AbstractSpringIntegrationTest {
     protected String contextPath;
 
     protected RequestSpecification restDocSpecification;
+    protected Map<String, Object> userInfoIxorTalk;
 
     private static String extractAuthorizationCodeFromRedirect(String location) throws URISyntaxException {
         return new URIBuilder(location)
@@ -176,7 +186,7 @@ public abstract class AbstractSpringIntegrationTest {
                         .addHeader(X_FORWARDED_PORT, "")
                         .build();
 
-        Map<String, Object> userInfoIxorTalk = newHashMap();
+        userInfoIxorTalk = newHashMap();
         userInfoIxorTalk.put("profilePictureUrl", PROFILE_PICTURE_URL_IXORTALK_PRINCIPAL);
         userInfoIxorTalk.put("firstName", FIRST_NAME_IXORTALK_PRINCIPAL);
         userInfoIxorTalk.put("lastName", LAST_NAME_IXORTALK_PRINCIPAL);
@@ -191,8 +201,12 @@ public abstract class AbstractSpringIntegrationTest {
         thirdPartyPrincipalEventbrite.put("first_name", FIRST_NAME_EVENTBRITE_PRINCIPAL);
         thirdPartyPrincipalEventbrite.put("last_name", LAST_NAME_EVENTBRITE_PRINCIPAL);
 
-        stubThirdPartyOAuth2Login(thirdPartyIxorTalkWireMockRule, thirdPartyPrincipalIxorTalk);
-        stubThirdPartyOAuth2Login(thirdPartyEventbriteWireMockRule, thirdPartyPrincipalEventbrite);
+
+        stubThirdPartyOAuth2Login(thirdPartyIxorTalkWireMockRule, createOAuth2AccessToken(IXORTALK_THIRD_PARTY_ACCESS_TOKEN, IXORTALK_THIRD_PARTY_REFRESH_TOKEN));
+        stubThirdPartyUserInfo(thirdPartyIxorTalkWireMockRule, thirdPartyPrincipalIxorTalk);
+
+        stubThirdPartyOAuth2Login(thirdPartyEventbriteWireMockRule, createOAuth2AccessToken(nextString("eventbrite-thirdparty-access-token"), nextString("eventbrite-thirdparty-refresh-token")));
+        stubThirdPartyUserInfo(thirdPartyEventbriteWireMockRule, thirdPartyPrincipalEventbrite);
     }
 
     protected String getLocalURL() {
@@ -204,13 +218,23 @@ public abstract class AbstractSpringIntegrationTest {
         stream(crudRepositories).forEach(CrudRepository::deleteAll);
     }
 
-    private void stubThirdPartyOAuth2Login(WireMockRule thirdPartyWireMockRule, Map<String, Object> thirdPartyPrincipalResponse) throws JsonProcessingException {
+    protected void stubThirdPartyOAuth2Login(WireMockRule thirdPartyWireMockRule, OAuth2AccessToken thirdPartyAccessToken) throws JsonProcessingException {
         thirdPartyWireMockRule.stubFor(get(urlPathMatching("/oauth/authorize?.*"))
                 .willReturn(
                         temporaryRedirect("{{request.requestLine.query.redirect_uri}}?state={{request.requestLine.query.state}}&code=" + nextString("oauth2-code"))
                                 .withTransformers("response-template")));
-        thirdPartyWireMockRule.stubFor(post(urlEqualTo("/oauth/token")).willReturn(okJson("{\"access_token\":\"" + nextString("access-token-") + "\"}")));
+        thirdPartyWireMockRule.stubFor(post(urlEqualTo("/oauth/token")).willReturn(okJson(objectMapper.writeValueAsString(thirdPartyAccessToken))));
+    }
+
+    protected void stubThirdPartyUserInfo(WireMockRule thirdPartyWireMockRule, Map<String, Object> thirdPartyPrincipalResponse) throws JsonProcessingException {
         thirdPartyWireMockRule.stubFor(get(urlPathEqualTo("/user-info")).willReturn(okJson(objectMapper.writeValueAsString(thirdPartyPrincipalResponse))));
+    }
+
+    protected OAuth2AccessToken createOAuth2AccessToken(String accessToken, String refreshToken) {
+        Map<String, String> tokenValues = newHashMap();
+        tokenValues.put(ACCESS_TOKEN, accessToken);
+        tokenValues.put(REFRESH_TOKEN, refreshToken);
+        return valueOf(tokenValues);
     }
 
     @Before

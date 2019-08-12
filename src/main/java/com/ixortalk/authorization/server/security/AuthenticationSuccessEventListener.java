@@ -23,67 +23,19 @@
  */
 package com.ixortalk.authorization.server.security;
 
-import com.ixortalk.authorization.server.domain.Authority;
-import com.ixortalk.authorization.server.domain.UserProfile;
-import com.ixortalk.authorization.server.rest.UserProfileRestResource;
 import org.springframework.context.ApplicationListener;
 import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 
 import javax.inject.Inject;
 
-import static java.util.stream.Collectors.toSet;
-
 public class AuthenticationSuccessEventListener implements ApplicationListener<AuthenticationSuccessEvent> {
 
     @Inject
-    private UserProfileRestResource userProfileRestResource;
+    private ThirdPartyProfileService thirdPartyProfileService;
 
     @Override
     public void onApplicationEvent(AuthenticationSuccessEvent event) throws IllegalArgumentException {
-
-        OAuth2Authentication oAuth2Authentication = (OAuth2Authentication) event.getAuthentication();
-
-        if (!(oAuth2Authentication.getPrincipal() instanceof IxorTalkPrincipal)) {
-            return;
-        }
-
-        IxorTalkPrincipal ixorTalkPrincipal = (IxorTalkPrincipal) oAuth2Authentication.getPrincipal();
-
-
-        userProfileRestResource.save(
-                userProfileRestResource.findByEmail(ixorTalkPrincipal.getName())
-                        .map(userProfile -> userProfile.assertCorrectProvider(ixorTalkPrincipal.getLoginProvider()))
-                        .map(existing ->
-                                existing.update(
-                                        ixorTalkPrincipal.getName(),
-                                        ixorTalkPrincipal.getName(),
-                                        ixorTalkPrincipal.getFirstName(),
-                                        ixorTalkPrincipal.getLastName(),
-                                        ixorTalkPrincipal.getProfilePictureUrl(),
-                                        oAuth2Authentication
-                                                .getAuthorities()
-                                                .stream()
-                                                .map(GrantedAuthority::getAuthority)
-                                                .map(Authority::authority)
-                                                .collect(toSet()),
-                                        ixorTalkPrincipal.getLoginProvider()
-                                ))
-                        .orElseGet(() ->
-                                new UserProfile(
-                                        ixorTalkPrincipal.getName(),
-                                        ixorTalkPrincipal.getName(),
-                                        ixorTalkPrincipal.getFirstName(),
-                                        ixorTalkPrincipal.getLastName(),
-                                        ixorTalkPrincipal.getProfilePictureUrl(),
-                                        oAuth2Authentication
-                                                .getAuthorities()
-                                                .stream()
-                                                .map(GrantedAuthority::getAuthority)
-                                                .map(Authority::authority)
-                                                .collect(toSet()),
-                                        ixorTalkPrincipal.getLoginProvider()
-                                )));
+        thirdPartyProfileService.updateProfile((OAuth2Authentication) event.getAuthentication());
     }
 }

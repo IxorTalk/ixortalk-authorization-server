@@ -24,8 +24,6 @@
 package com.ixortalk.authorization.server.config;
 
 import com.ixortalk.authorization.server.security.UserDetailsService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
@@ -34,6 +32,7 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.security.oauth2.provider.token.store.InMemoryTokenStore;
 import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
@@ -49,8 +48,6 @@ import javax.sql.DataSource;
 @EnableAuthorizationServer
 public class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdapter {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationServerConfiguration.class);
-
     @Inject
     private IxorTalkConfigProperties ixorTalkConfigProperties;
 
@@ -60,6 +57,12 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
     @Bean
     public TokenStore tokenStore() {
         return new JdbcTokenStore(dataSource);
+    }
+
+    // TODO wj #19 makes this a JDBC store too --> or custom token?
+    @Bean
+    public TokenStore thirdPartyTokenStore() {
+        return new InMemoryTokenStore();
     }
 
     @Override

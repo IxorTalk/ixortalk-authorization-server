@@ -23,7 +23,9 @@
  */
 package com.ixortalk.authorization.server.rest;
 
+import com.ixortalk.authorization.server.security.ThirdPartyProfileService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -38,12 +40,24 @@ public class UserInfoController {
     @Inject
     private UserProfileRestResource userProfileRestResource;
 
+    @Inject
+    private ThirdPartyProfileService thirdPartyProfileService;
+
     @RequestMapping("/user")
     public Object user(Principal principal) {
+        if (thirdPartyOAuth2Authentication(principal)) {
+            thirdPartyProfileService.refreshThirdPartyPrincipal((OAuth2Authentication) principal);
+        }
+
         return userProfileRestResource.findByEmail(principal.getName())
                 .<ResponseEntity<?>>map(ResponseEntity::ok)
                 .orElse(ok(principal));
     }
+
+    private boolean thirdPartyOAuth2Authentication(Principal principal) {
+        return principal instanceof OAuth2Authentication && ((OAuth2Authentication) principal).getUserAuthentication() instanceof OAuth2Authentication;
+    }
+
 
 }
 

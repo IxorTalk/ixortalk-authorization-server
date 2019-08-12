@@ -34,7 +34,9 @@ public enum TestConfigConstants {
     USER_CLIENT_SECRET("user-client-secret"),
 
     THIRD_PARTY_LOGIN_IXORTALK("third-party-ixortalk"),
-    THIRD_PARTY_LOGIN_EVENTBRITE("third-party-eventbrite");
+    THIRD_PARTY_LOGIN_EVENTBRITE("third-party-eventbrite"),
+
+    THIRD_PARTY_LOGIN_IXORTALK_CLIENT_ID("third-party-ixortalk-client-id");
 
     private String configValue;
 
