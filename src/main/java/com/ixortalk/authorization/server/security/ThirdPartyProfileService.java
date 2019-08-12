@@ -37,6 +37,7 @@ import org.springframework.security.oauth2.provider.token.TokenStore;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toSet;
 
 @Named
@@ -112,6 +113,9 @@ public class ThirdPartyProfileService {
             // should not happen
             return;
         }
+
+        ofNullable(thirdPartyTokenStore.getAccessToken(oAuth2Authentication))
+                .ifPresent(existingOAuth2AccessToken -> thirdPartyTokenStore.removeAccessToken(existingOAuth2AccessToken));
 
         thirdPartyTokenStore.storeAccessToken(accessToken, oAuth2Authentication);
     }

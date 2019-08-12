@@ -51,9 +51,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class UserInfoControllerIntegrationTest extends AbstractSpringIntegrationTest {
 
-    public static final String UPDATED_FIRST_NAME = "updatedFirstName";
-    public static final String UPDATED_ROLE = "ROLE_UPDATED";
-    public static final String REFRESHED_ACCESS_TOKEN = "refreshedAccessToken";
+    private static final String UPDATED_FIRST_NAME = "updatedFirstName";
+    private static final String UPDATED_ROLE = "ROLE_UPDATED";
+    private static final String REFRESHED_ACCESS_TOKEN = "refreshedAccessToken";
 
     @Test
     public void getUserInfo_NoProfileExists() {
@@ -216,8 +216,9 @@ public class UserInfoControllerIntegrationTest extends AbstractSpringIntegration
         assertThat(userProfile.getFirstName()).isEqualTo(UPDATED_FIRST_NAME);
         assertThat(userProfile.getAuthorities()).containsOnly(authority(UPDATED_ROLE));
         assertThat(thirdPartyTokenStore.findTokensByClientIdAndUserName(THIRD_PARTY_LOGIN_IXORTALK_CLIENT_ID.configValue(), PRINCIPAL_NAME_IXORTALK))
+                .hasSize(1)
                 .extracting(OAuth2AccessToken::getValue)
-                .contains(REFRESHED_ACCESS_TOKEN);
+                .containsExactly(REFRESHED_ACCESS_TOKEN);
     }
 
     private void expirePersistedThirdPartyAccessToken() {

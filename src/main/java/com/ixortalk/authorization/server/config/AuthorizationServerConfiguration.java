@@ -32,7 +32,6 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.token.TokenStore;
-import org.springframework.security.oauth2.provider.token.store.InMemoryTokenStore;
 import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
@@ -59,10 +58,23 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
         return new JdbcTokenStore(dataSource);
     }
 
-    // TODO wj #19 makes this a JDBC store too --> or custom token?
     @Bean
     public TokenStore thirdPartyTokenStore() {
-        return new InMemoryTokenStore();
+        JdbcTokenStore thirdPartyTokenStore = new JdbcTokenStore(dataSource);
+        thirdPartyTokenStore.setInsertAccessTokenSql("insert into third_pty_oauth_access_token (token_id, token, authentication_id, user_name, client_id, authentication, refresh_token) values (?, ?, ?, ?, ?, ?, ?)");
+        thirdPartyTokenStore.setSelectAccessTokenSql("select token_id, token from third_pty_oauth_access_token where token_id = ?");
+        thirdPartyTokenStore.setSelectAccessTokenAuthenticationSql("select token_id, authentication from third_pty_oauth_access_token where token_id = ?");
+        thirdPartyTokenStore.setSelectAccessTokenFromAuthenticationSql("select token_id, token from third_pty_oauth_access_token where authentication_id = ?");
+        thirdPartyTokenStore.setSelectAccessTokensFromUserNameAndClientIdSql("select token_id, token from third_pty_oauth_access_token where user_name = ? and client_id = ?");
+        thirdPartyTokenStore.setSelectAccessTokensFromUserNameSql("select token_id, token from third_pty_oauth_access_token where user_name = ?");
+        thirdPartyTokenStore.setSelectAccessTokensFromClientIdSql("select token_id, token from third_pty_oauth_access_token where client_id = ?");
+        thirdPartyTokenStore.setDeleteAccessTokenSql("delete from third_pty_oauth_access_token where token_id = ?");
+        thirdPartyTokenStore.setDeleteAccessTokenFromRefreshTokenSql("delete from third_pty_oauth_access_token where refresh_token = ?");
+        thirdPartyTokenStore.setInsertRefreshTokenSql("insert into third_pty_oauth_refresh_token (token_id, token, authentication) values (?, ?, ?)");
+        thirdPartyTokenStore.setSelectRefreshTokenSql("select token_id, token from third_pty_oauth_refresh_token where token_id = ?");
+        thirdPartyTokenStore.setSelectRefreshTokenAuthenticationSql("select token_id, authentication from third_pty_oauth_refresh_token where token_id = ?");
+        thirdPartyTokenStore.setDeleteRefreshTokenSql("delete from third_pty_oauth_refresh_token where token_id = ?");
+        return thirdPartyTokenStore;
     }
 
     @Override

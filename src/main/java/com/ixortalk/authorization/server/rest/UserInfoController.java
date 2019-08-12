@@ -55,6 +55,7 @@ public class UserInfoController {
     }
 
     private boolean thirdPartyOAuth2Authentication(Principal principal) {
+        // TODO wj #19 not working when using persisted tokens or after refresh ?  ((OAuth2Authentication) principal).getUserAuthentication() instanceof org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken ?
         return principal instanceof OAuth2Authentication && ((OAuth2Authentication) principal).getUserAuthentication() instanceof OAuth2Authentication;
     }
 
