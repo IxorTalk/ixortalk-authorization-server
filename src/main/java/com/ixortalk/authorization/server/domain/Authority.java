@@ -27,9 +27,10 @@ import com.google.common.base.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
+import java.io.Serializable;
 
 @Embeddable
-public class Authority {
+public class Authority implements Serializable {
 
     @Column
     private String authority;

@@ -31,6 +31,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import java.io.Serializable;
 import java.util.Set;
 
 import static com.google.common.collect.Sets.newHashSet;
@@ -38,7 +39,7 @@ import static javax.persistence.EnumType.STRING;
 import static javax.persistence.FetchType.EAGER;
 
 @Entity
-public class UserProfile {
+public class UserProfile implements Serializable {
 
     @Id
     @GeneratedValue

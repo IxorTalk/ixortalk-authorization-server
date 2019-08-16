@@ -23,6 +23,7 @@
  */
 package com.ixortalk.authorization.server.security;
 
+import com.ixortalk.authorization.server.security.thirdparty.ThirdPartyProfileService;
 import org.springframework.context.ApplicationListener;
 import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;

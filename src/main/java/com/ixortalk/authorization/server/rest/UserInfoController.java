@@ -23,9 +23,10 @@
  */
 package com.ixortalk.authorization.server.rest;
 
-import com.ixortalk.authorization.server.security.ThirdPartyProfileService;
+import com.ixortalk.authorization.server.security.thirdparty.ThirdPartyProfileService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -46,6 +47,7 @@ public class UserInfoController {
     @RequestMapping("/user")
     public Object user(Principal principal) {
         if (thirdPartyOAuth2Authentication(principal)) {
+            // TODO wj #19 upgrade --> how about users having a profile and token already but no third party token?
             thirdPartyProfileService.refreshThirdPartyPrincipal((OAuth2Authentication) principal);
         }
 
@@ -55,10 +57,10 @@ public class UserInfoController {
     }
 
     private boolean thirdPartyOAuth2Authentication(Principal principal) {
-        // TODO wj #19 not working when using persisted tokens or after refresh ?  ((OAuth2Authentication) principal).getUserAuthentication() instanceof org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken ?
-        return principal instanceof OAuth2Authentication && ((OAuth2Authentication) principal).getUserAuthentication() instanceof OAuth2Authentication;
+        if (!(principal instanceof OAuth2Authentication)) {
+            return false;
+        }
+        return ((OAuth2Authentication) principal).getUserAuthentication() instanceof OAuth2Authentication || ((OAuth2Authentication) principal).getUserAuthentication() instanceof PreAuthenticatedAuthenticationToken;
     }
-
-
 }
 

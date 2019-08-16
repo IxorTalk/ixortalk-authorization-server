@@ -81,7 +81,7 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) {
         endpoints
                 .tokenStore(tokenStore())
-                .userDetailsService(new UserDetailsService())
+                .userDetailsService(userDetailsService())
                 // See https://github.com/spring-projects/spring-security-oauth/issues/140
                 .addInterceptor(new HandlerInterceptorAdapter() {
                     @Override
@@ -101,6 +101,11 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
                         }
                     }
                 });
+    }
+
+    @Bean
+    public UserDetailsService userDetailsService() {
+        return new UserDetailsService();
     }
 
     @Override

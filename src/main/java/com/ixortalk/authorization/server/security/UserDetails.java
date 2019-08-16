@@ -23,21 +23,36 @@
  */
 package com.ixortalk.authorization.server.security;
 
+import com.ixortalk.authorization.server.domain.Authority;
+import com.ixortalk.authorization.server.domain.LoginProvider;
+import com.ixortalk.authorization.server.domain.UserProfile;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.Collection;
 
+import static java.util.stream.Collectors.toSet;
+
 public class UserDetails implements org.springframework.security.core.userdetails.UserDetails {
 
-    private String username;
+    private UserProfile userProfile;
 
-    public UserDetails(String username) {
-        this.username = username;
+    public UserDetails(UserProfile userProfile) {
+        this.userProfile = userProfile;
+    }
+
+    public LoginProvider getLoginProvider() {
+        return this.userProfile.getLoginProvider();
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+        return userProfile
+                .getAuthorities()
+                .stream()
+                .map(Authority::getAuthority)
+                .map(SimpleGrantedAuthority::new)
+                .collect(toSet());
     }
 
     @Override
@@ -47,7 +62,7 @@ public class UserDetails implements org.springframework.security.core.userdetail
 
     @Override
     public String getUsername() {
-        return this.username;
+        return this.userProfile.getName();
     }
 
     @Override

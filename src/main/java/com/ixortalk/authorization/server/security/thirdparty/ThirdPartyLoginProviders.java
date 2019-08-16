@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.ixortalk.authorization.server.security;
+package com.ixortalk.authorization.server.security.thirdparty;
 
 import com.ixortalk.authorization.server.domain.LoginProvider;
 import org.springframework.security.oauth2.client.resource.OAuth2ProtectedResourceDetails;

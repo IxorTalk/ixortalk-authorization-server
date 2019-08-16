@@ -118,40 +118,31 @@ public class UserInfoControllerIntegrationTest extends AbstractSpringIntegration
     }
 
     @Test
-    public void getUserInfo_WithRefreshToken() {
+    public void getUserInfo_InternalAccessTokenRefresh() throws JsonProcessingException {
 
-        userProfileRestResource.save(
-                aUserProfile()
-                        .withName(PRINCIPAL_NAME_IXORTALK)
-                        .withEmail(PRINCIPAL_NAME_IXORTALK)
-                        .withFirstName(nextString("persistedFirstName"))
-                        .withLastName(nextString("persistedLastName"))
-                        .withProfilePictureUrl(nextString("persistedProfilePictureUrl"))
-                        .withLoginProvider(IXORTALK)
-                        .build());
+        OAuth2AccessToken oAuth2AccessToken = getAccessTokenWithAuthorizationCode();
+
+        given()
+                .auth().preemptive().oauth2(oAuth2AccessToken.getValue())
+                .when()
+                .get("/user")
+                .then()
+                .statusCode(HTTP_OK);
+
+        updateThirdPartyUserInfo();
 
         UserProfile userProfile =
                 given()
-                        .auth().preemptive().oauth2(getAccessTokenWithRefreshToken(getAccessTokenWithAuthorizationCode().getRefreshToken()).getValue())
+                        .auth().preemptive().oauth2(getAccessTokenWithRefreshToken(oAuth2AccessToken.getRefreshToken()).getValue())
                         .when()
                         .get("/user")
                         .then()
                         .statusCode(HTTP_OK)
                         .extract().as(UserProfile.class);
 
-        assertThat(userProfile)
-                .isEqualToIgnoringGivenFields(
-                        aUserProfile()
-                                .withName(PRINCIPAL_NAME_IXORTALK)
-                                .withEmail(PRINCIPAL_NAME_IXORTALK)
-                                .withFirstName(FIRST_NAME_IXORTALK_PRINCIPAL)
-                                .withLastName(LAST_NAME_IXORTALK_PRINCIPAL)
-                                .withProfilePictureUrl(PROFILE_PICTURE_URL_IXORTALK_PRINCIPAL)
-                                .withAuthorities(authority(ROLE_IXORTALK_ROLE_1), authority(ROLE_IXORTALK_ROLE_2))
-                                .withLoginProvider(IXORTALK)
-                                .build(),
-                        "id"
-                );
+
+        assertThat(userProfile.getFirstName()).isEqualTo(UPDATED_FIRST_NAME);
+        assertThat(userProfile.getAuthorities()).containsOnly(authority(UPDATED_ROLE));
     }
 
     @Test
@@ -186,7 +177,7 @@ public class UserInfoControllerIntegrationTest extends AbstractSpringIntegration
     }
 
     @Test
-    public void getUserInfo_ThirdPartyAccessTokenProperlyRefreshed() throws JsonProcessingException {
+    public void getUserInfo_ThirdPartyAccessTokenRefresh() throws JsonProcessingException {
         String accessToken = getAccessTokenWithAuthorizationCode().getValue();
 
         given()

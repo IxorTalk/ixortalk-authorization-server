@@ -23,12 +23,20 @@
  */
 package com.ixortalk.authorization.server.security;
 
+import com.ixortalk.authorization.server.rest.UserProfileRestResource;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+
+import javax.inject.Inject;
 
 public class UserDetailsService implements org.springframework.security.core.userdetails.UserDetailsService {
 
+    @Inject
+    private UserProfileRestResource userProfileRestResource;
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return new UserDetails(username);
+        return userProfileRestResource.findByEmail(username)
+                .map(UserDetails::new)
+                .orElseThrow(() -> new UsernameNotFoundException("User " + username + " not found"));
     }
 }
