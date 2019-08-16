@@ -21,27 +21,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.ixortalk.authorization.server;
+package com.ixortalk.authorization.server.config;
 
-import com.ixortalk.authorization.server.config.IxorTalkConfigProperties;
-import io.prometheus.client.spring.boot.EnablePrometheusEndpoint;
-import io.prometheus.client.spring.boot.EnableSpringBootMetricsCollector;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cloud.security.oauth2.client.ResourceServerTokenRelayAutoConfiguration;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-@SpringBootApplication(exclude = {ResourceServerTokenRelayAutoConfiguration.class})
-@EnableGlobalMethodSecurity(prePostEnabled = true)
-@EnablePrometheusEndpoint
-@EnableSpringBootMetricsCollector
-@EnableConfigurationProperties(IxorTalkConfigProperties.class)
-@EnableCaching
-public class AuthorizationServerApplication {
+import javax.inject.Inject;
 
-    public static void main(String[] args) {
-        SpringApplication.run(AuthorizationServerApplication.class, args);
+import static com.google.common.cache.CacheBuilder.newBuilder;
+import static com.ixortalk.authorization.server.rest.UserInfoController.USER_INFO_CACHE_NAME;
+import static java.util.concurrent.TimeUnit.SECONDS;
+
+@Configuration
+public class CacheConfiguration {
+
+    @Inject
+    private IxorTalkConfigProperties ixorTalkConfigProperties;
+
+    @Bean
+    public ConcurrentMapCacheFactoryBean cacheBean(){
+        ConcurrentMapCacheFactoryBean cacheFactoryBean = new ConcurrentMapCacheFactoryBean();
+        cacheFactoryBean.setName(USER_INFO_CACHE_NAME);
+        cacheFactoryBean.setStore(
+                newBuilder()
+                        .expireAfterWrite(ixorTalkConfigProperties.getSecurity().getUserInfoCache().getTtlInSeconds(), SECONDS)
+                        .build()
+                        .asMap());
+        return cacheFactoryBean;
     }
 }

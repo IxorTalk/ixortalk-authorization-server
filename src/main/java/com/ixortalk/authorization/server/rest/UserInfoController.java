@@ -24,6 +24,7 @@
 package com.ixortalk.authorization.server.rest;
 
 import com.ixortalk.authorization.server.security.thirdparty.ThirdPartyProfileService;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
@@ -38,6 +39,8 @@ import static org.springframework.http.ResponseEntity.ok;
 @RestController
 public class UserInfoController {
 
+    public static final String USER_INFO_CACHE_NAME = "userInfoCache";
+
     @Inject
     private UserProfileRestResource userProfileRestResource;
 
@@ -45,6 +48,7 @@ public class UserInfoController {
     private ThirdPartyProfileService thirdPartyProfileService;
 
     @RequestMapping("/user")
+    @Cacheable(cacheNames = USER_INFO_CACHE_NAME, sync = true, key = "#principal.name")
     public Object user(Principal principal) {
         if (thirdPartyOAuth2Authentication(principal)) {
             // TODO wj #19 upgrade --> how about users having a profile and token already but no third party token?

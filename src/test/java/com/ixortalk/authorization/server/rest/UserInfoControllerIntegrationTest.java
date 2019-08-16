@@ -32,11 +32,14 @@ import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 
 import java.util.Date;
+import java.util.List;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.containing;
+import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.okJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.ixortalk.authorization.server.TestConfigConstants.THIRD_PARTY_LOGIN_IXORTALK_CLIENT_ID;
 import static com.ixortalk.authorization.server.domain.AuthorityTestBuilder.authority;
@@ -45,6 +48,7 @@ import static com.ixortalk.authorization.server.domain.UserProfileTestBuilder.aU
 import static com.ixortalk.test.util.Randomizer.nextString;
 import static com.jayway.restassured.RestAssured.given;
 import static java.lang.System.currentTimeMillis;
+import static java.lang.Thread.sleep;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -129,7 +133,7 @@ public class UserInfoControllerIntegrationTest extends AbstractSpringIntegration
                 .then()
                 .statusCode(HTTP_OK);
 
-        updateThirdPartyUserInfo();
+        updateThirdPartyUserInfoAndInvalidateCache();
 
         UserProfile userProfile =
                 given()
@@ -161,7 +165,7 @@ public class UserInfoControllerIntegrationTest extends AbstractSpringIntegration
         assertThat(userProfile.getFirstName()).isEqualTo(FIRST_NAME_IXORTALK_PRINCIPAL);
         assertThat(userProfile.getAuthorities()).containsOnly(authority(ROLE_IXORTALK_ROLE_1), authority(ROLE_IXORTALK_ROLE_2));
 
-        updateThirdPartyUserInfo();
+        updateThirdPartyUserInfoAndInvalidateCache();
 
         userProfile =
                 given()
@@ -188,7 +192,7 @@ public class UserInfoControllerIntegrationTest extends AbstractSpringIntegration
                 .statusCode(HTTP_OK);
 
         expirePersistedThirdPartyAccessToken();
-        updateThirdPartyUserInfo();
+        updateThirdPartyUserInfoAndInvalidateCache();
 
         thirdPartyIxorTalkWireMockRule.stubFor(
                 post(urlEqualTo("/oauth/token"))
@@ -212,6 +216,55 @@ public class UserInfoControllerIntegrationTest extends AbstractSpringIntegration
                 .containsExactly(REFRESHED_ACCESS_TOKEN);
     }
 
+    @Test
+    public void getUserInfo_Cached() {
+        OAuth2AccessToken oAuth2AccessToken = getAccessTokenWithAuthorizationCode();
+        given()
+                .auth().preemptive().oauth2(oAuth2AccessToken.getValue())
+                .when()
+                .get("/user")
+                .then()
+                .statusCode(HTTP_OK)
+                .extract().as(UserProfile.class);
+        given()
+                .auth().preemptive().oauth2(oAuth2AccessToken.getValue())
+                .when()
+                .get("/user")
+                .then()
+                .statusCode(HTTP_OK)
+                .extract().as(UserProfile.class);
+
+        List<String> expectedInvocations = newArrayList("during login", "actual first /user call");
+
+        thirdPartyIxorTalkWireMockRule.verify(expectedInvocations.size(), getRequestedFor(urlPathEqualTo("/user-info")));
+    }
+
+    @Test
+    public void getUserInfo_CacheExpiry() throws InterruptedException {
+        OAuth2AccessToken oAuth2AccessToken = getAccessTokenWithAuthorizationCode();
+        given()
+                .auth().preemptive().oauth2(oAuth2AccessToken.getValue())
+                .when()
+                .get("/user")
+                .then()
+                .statusCode(HTTP_OK)
+                .extract().as(UserProfile.class);
+
+        sleep(ixorTalkConfigProperties.getSecurity().getUserInfoCache().getTtlInSeconds() * 1000);
+
+        given()
+                .auth().preemptive().oauth2(oAuth2AccessToken.getValue())
+                .when()
+                .get("/user")
+                .then()
+                .statusCode(HTTP_OK)
+                .extract().as(UserProfile.class);
+
+        List<String> expectedInvocations = newArrayList("during login", "actual first /user call", "after expiry /user call");
+
+        thirdPartyIxorTalkWireMockRule.verify(expectedInvocations.size(), getRequestedFor(urlPathEqualTo("/user-info")));
+    }
+
     private void expirePersistedThirdPartyAccessToken() {
         OAuth2AccessToken thirdPartyOAuth2AccessToken = thirdPartyTokenStore.readAccessToken(IXORTALK_THIRD_PARTY_ACCESS_TOKEN);
         OAuth2Authentication thirdPartyOAuth2Authentication = thirdPartyTokenStore.readAuthentication(thirdPartyOAuth2AccessToken);
@@ -219,10 +272,12 @@ public class UserInfoControllerIntegrationTest extends AbstractSpringIntegration
         thirdPartyTokenStore.storeAccessToken(thirdPartyOAuth2AccessToken, thirdPartyOAuth2Authentication);
     }
 
-    private void updateThirdPartyUserInfo() throws JsonProcessingException {
+    private void updateThirdPartyUserInfoAndInvalidateCache() throws JsonProcessingException {
         userInfoIxorTalk.put("firstName", UPDATED_FIRST_NAME);
         thirdPartyPrincipalIxorTalk.put("authorities", newArrayList(singletonMap("name", UPDATED_ROLE)));
         thirdPartyPrincipalIxorTalk.put("userInfo", userInfoIxorTalk);
         stubThirdPartyUserInfo(thirdPartyIxorTalkWireMockRule, thirdPartyPrincipalIxorTalk);
+
+        clearCaches();
     }
 }

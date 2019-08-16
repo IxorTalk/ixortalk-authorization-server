@@ -106,8 +106,6 @@ public class ThirdPartyProfileService {
     }
 
     public void refreshThirdPartyPrincipal(OAuth2Authentication oAuth2Authentication) {
-        // TODO wj #19 concurrency
-
         Pair<ThirdPartyLoginProvider, OAuth2AccessToken> storedThirdPartyOAuth2AccessToken = thirdPartyTokenService.getStoredThirdPartyToken(oAuth2Authentication);
 
         ThirdPartyLoginProvider thirdPartyLoginProvider = storedThirdPartyOAuth2AccessToken.getFirst();
@@ -129,6 +127,4 @@ public class ThirdPartyProfileService {
 
         updateProfile(refreshedThirdPartyOAuth2Authentication);
     }
-
-
 }

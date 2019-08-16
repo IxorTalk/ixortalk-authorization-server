@@ -43,6 +43,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cache.CacheManager;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.restdocs.JUnitRestDocumentation;
 import org.springframework.restdocs.headers.HeaderDescriptor;
@@ -153,6 +154,9 @@ public abstract class AbstractSpringIntegrationTest {
     @Inject
     protected TokenStore thirdPartyTokenStore;
 
+    @Inject
+    private CacheManager cacheManager;
+
     @LocalServerPort
     protected int port;
 
@@ -216,6 +220,11 @@ public abstract class AbstractSpringIntegrationTest {
     @After
     public void cleanCrudRepositories() {
         stream(crudRepositories).forEach(CrudRepository::deleteAll);
+    }
+
+    @After
+    public void clearCaches() {
+        this.cacheManager.getCacheNames().forEach(cacheName -> cacheManager.getCache(cacheName).clear());
     }
 
     protected void stubThirdPartyOAuth2Login(WireMockRule thirdPartyWireMockRule, OAuth2AccessToken thirdPartyAccessToken) throws JsonProcessingException {
