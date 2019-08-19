@@ -50,6 +50,7 @@ import static com.jayway.restassured.RestAssured.given;
 import static java.lang.System.currentTimeMillis;
 import static java.lang.Thread.sleep;
 import static java.net.HttpURLConnection.HTTP_OK;
+import static java.net.HttpURLConnection.HTTP_UNAUTHORIZED;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -263,6 +264,21 @@ public class UserInfoControllerIntegrationTest extends AbstractSpringIntegration
         List<String> expectedInvocations = newArrayList("during login", "actual first /user call", "after expiry /user call");
 
         thirdPartyIxorTalkWireMockRule.verify(expectedInvocations.size(), getRequestedFor(urlPathEqualTo("/user-info")));
+    }
+
+    @Test
+    public void getUserInfo_NoStoredThirdPartyToken() {
+
+        OAuth2AccessToken oAuth2AccessToken = getAccessTokenWithAuthorizationCode();
+
+        thirdPartyTokenStore.removeAccessToken(thirdPartyTokenStore.readAccessToken(IXORTALK_THIRD_PARTY_ACCESS_TOKEN));
+
+        given()
+                .auth().preemptive().oauth2(oAuth2AccessToken.getValue())
+                .when()
+                .get("/user")
+                .then()
+                .statusCode(HTTP_UNAUTHORIZED);
     }
 
     private void expirePersistedThirdPartyAccessToken() {

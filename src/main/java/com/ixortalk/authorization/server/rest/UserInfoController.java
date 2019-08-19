@@ -51,7 +51,6 @@ public class UserInfoController {
     @Cacheable(cacheNames = USER_INFO_CACHE_NAME, sync = true, key = "#principal.name")
     public Object user(Principal principal) {
         if (thirdPartyOAuth2Authentication(principal)) {
-            // TODO wj #19 upgrade --> how about users having a profile and token already but no third party token?
             thirdPartyProfileService.refreshThirdPartyPrincipal((OAuth2Authentication) principal);
         }
 

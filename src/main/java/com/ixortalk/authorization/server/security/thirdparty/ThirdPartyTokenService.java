@@ -26,6 +26,7 @@ package com.ixortalk.authorization.server.security.thirdparty;
 import com.ixortalk.authorization.server.security.IxorTalkPrincipal;
 import com.ixortalk.authorization.server.security.UserDetails;
 import org.springframework.data.util.Pair;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.oauth2.client.resource.UserRedirectRequiredException;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
@@ -95,6 +96,6 @@ public class ThirdPartyTokenService {
 
         return Pair.of(
                 thirdPartyLoginProviders.getLoginProvider(((IxorTalkPrincipal) oAuth2Authentication.getPrincipal()).getLoginProvider()),
-                thirdPartyTokenStore.getAccessToken(thirdPartyOAuth2Authentication));
+                ofNullable(thirdPartyTokenStore.getAccessToken(thirdPartyOAuth2Authentication)).orElseThrow(() -> new AuthenticationServiceException("No valid third party token found")));
     }
 }
