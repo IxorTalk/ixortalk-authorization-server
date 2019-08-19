@@ -281,6 +281,21 @@ public class UserInfoControllerIntegrationTest extends AbstractSpringIntegration
                 .statusCode(HTTP_UNAUTHORIZED);
     }
 
+    @Test
+    public void getUserInfo_Refresh_NoStoredThirdPartyToken() {
+
+        OAuth2AccessToken refreshedOAuth2AccessToken = getAccessTokenWithRefreshToken(getAccessTokenWithAuthorizationCode().getRefreshToken());
+
+        thirdPartyTokenStore.removeAccessToken(thirdPartyTokenStore.readAccessToken(IXORTALK_THIRD_PARTY_ACCESS_TOKEN));
+
+        given()
+                .auth().preemptive().oauth2(refreshedOAuth2AccessToken.getValue())
+                .when()
+                .get("/user")
+                .then()
+                .statusCode(HTTP_UNAUTHORIZED);
+    }
+
     private void expirePersistedThirdPartyAccessToken() {
         OAuth2AccessToken thirdPartyOAuth2AccessToken = thirdPartyTokenStore.readAccessToken(IXORTALK_THIRD_PARTY_ACCESS_TOKEN);
         OAuth2Authentication thirdPartyOAuth2Authentication = thirdPartyTokenStore.readAuthentication(thirdPartyOAuth2AccessToken);

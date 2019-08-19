@@ -308,7 +308,6 @@ public abstract class AbstractSpringIntegrationTest {
                 .when()
                 .post("/oauth/token")
                 .then()
-                .log().all()
                 .statusCode(HTTP_OK)
                 .extract().as(OAuth2AccessToken.class);
     }

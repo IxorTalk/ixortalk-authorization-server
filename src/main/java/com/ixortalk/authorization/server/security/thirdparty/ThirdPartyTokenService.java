@@ -85,7 +85,7 @@ public class ThirdPartyTokenService {
                                 userDetails.getUsername());
 
         if (tokensByClientIdAndUserName.size() != 1) {
-            throw new OAuth2Exception("Unable to refresh third party token");
+            throw new AuthenticationServiceException("Unable to refresh third party token");
         }
 
         return Pair.of(thirdPartyLoginProvider, tokensByClientIdAndUserName.iterator().next());
