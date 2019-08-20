@@ -63,7 +63,15 @@ public class UserInfoController {
         if (!(principal instanceof OAuth2Authentication)) {
             return false;
         }
-        return ((OAuth2Authentication) principal).getUserAuthentication() instanceof OAuth2Authentication || ((OAuth2Authentication) principal).getUserAuthentication() instanceof PreAuthenticatedAuthenticationToken;
+        return thirdPartyAuthentication((OAuth2Authentication) principal) || refreshedAuthentication((OAuth2Authentication) principal);
+    }
+
+    private boolean refreshedAuthentication(OAuth2Authentication principal) {
+        return principal.getUserAuthentication() instanceof PreAuthenticatedAuthenticationToken;
+    }
+
+    private boolean thirdPartyAuthentication(OAuth2Authentication principal) {
+        return principal.getUserAuthentication() instanceof OAuth2Authentication;
     }
 }
 
