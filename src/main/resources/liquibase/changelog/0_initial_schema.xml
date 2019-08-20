@@ -152,4 +152,35 @@
         <delete tableName="user_profile"/>
     </changeSet>
 
+    <changeSet id="issue_19_third_party_token_store_tables" author="wjans">
+
+        <createTable tableName="third_pty_oauth_access_token">
+            <column name="token_id" type="varchar(255)"/>
+            <column name="token" type="${blob_type}"/>
+            <column name="authentication_id" type="varchar(255)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="user_name" type="varchar(50)"/>
+            <column name="client_id" type="varchar(255)"/>
+            <column name="authentication" type="${blob_type}"/>
+            <column name="refresh_token" type="varchar(255)"/>
+        </createTable>
+
+        <createTable tableName="third_pty_oauth_refresh_token">
+            <column name="token_id" type="varchar(255)"/>
+            <column name="token" type="${blob_type}"/>
+            <column name="authentication" type="${blob_type}"/>
+        </createTable>
+
+    </changeSet>
+
+    <changeSet id="issue_19_delete_internal_tokens" author="wjans">
+        <delete tableName="oauth_refresh_token">
+            <where>token_id in (select oat.refresh_token from oauth_access_token oat where oat.user_name is not null)</where>
+        </delete>
+        <delete tableName="oauth_access_token">
+            <where>user_name is not null</where>
+        </delete>
+    </changeSet>
+
 </databaseChangeLog>

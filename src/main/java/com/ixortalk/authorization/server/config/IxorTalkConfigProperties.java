@@ -61,10 +61,16 @@ public class IxorTalkConfigProperties {
 
         private String loginUrl;
 
+        private UserInfoCache userInfoCache = new UserInfoCache();
+
         private final Authentication authentication = new Authentication();
 
         public String getLoginUrl() {
             return loginUrl;
+        }
+
+        public UserInfoCache getUserInfoCache() {
+            return userInfoCache;
         }
 
         public void setLoginUrl(String loginUrl) {
@@ -175,6 +181,19 @@ public class IxorTalkConfigProperties {
                     return redirectUris;
                 }
             }
+        }
+    }
+
+    public static class UserInfoCache {
+
+        private long ttlInSeconds = 10;
+
+        public long getTtlInSeconds() {
+            return ttlInSeconds;
+        }
+
+        public void setTtlInSeconds(long ttlInSeconds) {
+            this.ttlInSeconds = ttlInSeconds;
         }
     }
 

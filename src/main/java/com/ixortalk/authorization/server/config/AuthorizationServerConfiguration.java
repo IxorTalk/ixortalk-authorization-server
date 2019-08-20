@@ -24,8 +24,6 @@
 package com.ixortalk.authorization.server.config;
 
 import com.ixortalk.authorization.server.security.UserDetailsService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
@@ -49,8 +47,6 @@ import javax.sql.DataSource;
 @EnableAuthorizationServer
 public class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdapter {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationServerConfiguration.class);
-
     @Inject
     private IxorTalkConfigProperties ixorTalkConfigProperties;
 
@@ -62,11 +58,30 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
         return new JdbcTokenStore(dataSource);
     }
 
+    @Bean
+    public TokenStore thirdPartyTokenStore() {
+        JdbcTokenStore thirdPartyTokenStore = new JdbcTokenStore(dataSource);
+        thirdPartyTokenStore.setInsertAccessTokenSql("insert into third_pty_oauth_access_token (token_id, token, authentication_id, user_name, client_id, authentication, refresh_token) values (?, ?, ?, ?, ?, ?, ?)");
+        thirdPartyTokenStore.setSelectAccessTokenSql("select token_id, token from third_pty_oauth_access_token where token_id = ?");
+        thirdPartyTokenStore.setSelectAccessTokenAuthenticationSql("select token_id, authentication from third_pty_oauth_access_token where token_id = ?");
+        thirdPartyTokenStore.setSelectAccessTokenFromAuthenticationSql("select token_id, token from third_pty_oauth_access_token where authentication_id = ?");
+        thirdPartyTokenStore.setSelectAccessTokensFromUserNameAndClientIdSql("select token_id, token from third_pty_oauth_access_token where user_name = ? and client_id = ?");
+        thirdPartyTokenStore.setSelectAccessTokensFromUserNameSql("select token_id, token from third_pty_oauth_access_token where user_name = ?");
+        thirdPartyTokenStore.setSelectAccessTokensFromClientIdSql("select token_id, token from third_pty_oauth_access_token where client_id = ?");
+        thirdPartyTokenStore.setDeleteAccessTokenSql("delete from third_pty_oauth_access_token where token_id = ?");
+        thirdPartyTokenStore.setDeleteAccessTokenFromRefreshTokenSql("delete from third_pty_oauth_access_token where refresh_token = ?");
+        thirdPartyTokenStore.setInsertRefreshTokenSql("insert into third_pty_oauth_refresh_token (token_id, token, authentication) values (?, ?, ?)");
+        thirdPartyTokenStore.setSelectRefreshTokenSql("select token_id, token from third_pty_oauth_refresh_token where token_id = ?");
+        thirdPartyTokenStore.setSelectRefreshTokenAuthenticationSql("select token_id, authentication from third_pty_oauth_refresh_token where token_id = ?");
+        thirdPartyTokenStore.setDeleteRefreshTokenSql("delete from third_pty_oauth_refresh_token where token_id = ?");
+        return thirdPartyTokenStore;
+    }
+
     @Override
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) {
         endpoints
                 .tokenStore(tokenStore())
-                .userDetailsService(new UserDetailsService())
+                .userDetailsService(userDetailsService())
                 // See https://github.com/spring-projects/spring-security-oauth/issues/140
                 .addInterceptor(new HandlerInterceptorAdapter() {
                     @Override
@@ -86,6 +101,11 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
                         }
                     }
                 });
+    }
+
+    @Bean
+    public UserDetailsService userDetailsService() {
+        return new UserDetailsService();
     }
 
     @Override

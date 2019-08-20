@@ -27,7 +27,11 @@ import com.ixortalk.authorization.server.AbstractSpringIntegrationTest;
 import org.junit.Test;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 
+import static com.jayway.restassured.RestAssured.given;
+import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static org.assertj.core.api.Assertions.assertThat;
+import static wiremock.org.apache.http.HttpHeaders.LOCATION;
+import static wiremock.org.eclipse.jetty.http.HttpStatus.MOVED_TEMPORARILY_302;
 
 public class TokenIntegrationTest extends AbstractSpringIntegrationTest {
 
@@ -49,5 +53,30 @@ public class TokenIntegrationTest extends AbstractSpringIntegrationTest {
         assertThat(refreshedToken.getValue()).isNotEqualTo(initialToken.getValue());
     }
 
+    @Test
+    public void sessionInvalidatedAfterOAuth2Redirect() {
+
+        OAuth2AccessToken oAuth2AccessToken = getAccessTokenWithAuthorizationCode();
+
+        given()
+                .auth().preemptive().oauth2(oAuth2AccessToken.getValue())
+                .filter(sessionFilter)
+        .when()
+                .get("/user")
+        .then()
+                .statusCode(SC_OK);
+
+        String redirect =
+                given()
+                        .auth().preemptive().oauth2(oAuth2AccessToken.getValue())
+                        .filter(sessionFilter)
+                .when()
+                        .get("/hello")
+                .then()
+                        .statusCode(MOVED_TEMPORARILY_302)
+                        .extract().header(LOCATION);
+
+        assertThat(redirect).isEqualTo(getLocalURL() + ixorTalkConfigProperties.getSecurity().getLoginUrl());
+    }
 }
 

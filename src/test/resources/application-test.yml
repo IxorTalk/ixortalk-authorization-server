@@ -46,6 +46,8 @@ ixortalk:
     default-redirect-uri: /${server.context-path}/logout
     redirect-uri-param-name: redirect_uri
   security:
+    user-info-cache:
+      ttl-in-seconds: 2
     login-url: /login
     authentication:
       oauth-clients:
@@ -61,6 +63,7 @@ ixortalk:
           tokenValidityInSeconds: 86400
           authorities: ROLE_USER
           redirect-uris: http://localhost/login
+
 
   third-party-logins:
     third-party-ixortalk:

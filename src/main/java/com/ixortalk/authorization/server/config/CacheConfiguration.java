@@ -21,22 +21,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.ixortalk.authorization.server.security;
+package com.ixortalk.authorization.server.config;
 
-import com.ixortalk.authorization.server.rest.UserProfileRestResource;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 import javax.inject.Inject;
 
-public class UserDetailsService implements org.springframework.security.core.userdetails.UserDetailsService {
+import static com.google.common.cache.CacheBuilder.newBuilder;
+import static com.ixortalk.authorization.server.rest.UserInfoController.USER_INFO_CACHE_NAME;
+import static java.util.concurrent.TimeUnit.SECONDS;
+
+@Configuration
+public class CacheConfiguration {
 
     @Inject
-    private UserProfileRestResource userProfileRestResource;
+    private IxorTalkConfigProperties ixorTalkConfigProperties;
 
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userProfileRestResource.findByEmail(username)
-                .map(UserDetails::new)
-                .orElseThrow(() -> new UsernameNotFoundException("User " + username + " not found"));
+    @Bean
+    public ConcurrentMapCacheFactoryBean cacheBean(){
+        ConcurrentMapCacheFactoryBean cacheFactoryBean = new ConcurrentMapCacheFactoryBean();
+        cacheFactoryBean.setName(USER_INFO_CACHE_NAME);
+        cacheFactoryBean.setStore(
+                newBuilder()
+                        .expireAfterWrite(ixorTalkConfigProperties.getSecurity().getUserInfoCache().getTtlInSeconds(), SECONDS)
+                        .build()
+                        .asMap());
+        return cacheFactoryBean;
     }
 }

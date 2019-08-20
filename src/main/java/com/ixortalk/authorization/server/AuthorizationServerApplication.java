@@ -29,13 +29,16 @@ import io.prometheus.client.spring.boot.EnableSpringBootMetricsCollector;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cloud.security.oauth2.client.ResourceServerTokenRelayAutoConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 
-@SpringBootApplication
+@SpringBootApplication(exclude = {ResourceServerTokenRelayAutoConfiguration.class})
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @EnablePrometheusEndpoint
 @EnableSpringBootMetricsCollector
 @EnableConfigurationProperties(IxorTalkConfigProperties.class)
+@EnableCaching
 public class AuthorizationServerApplication {
 
     public static void main(String[] args) {

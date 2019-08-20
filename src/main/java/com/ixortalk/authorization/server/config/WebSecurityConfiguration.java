@@ -26,6 +26,8 @@ package com.ixortalk.authorization.server.config;
 import com.ixortalk.authorization.server.domain.LoginProvider;
 import com.ixortalk.authorization.server.security.AuthenticationSuccessEventListener;
 import com.ixortalk.authorization.server.security.IxorTalkPrincipal;
+import com.ixortalk.authorization.server.security.thirdparty.ThirdPartyLoginProvider;
+import com.ixortalk.authorization.server.security.thirdparty.ThirdPartyLoginProviders;
 import com.ixortalk.authorization.server.security.UrlLogoutSuccessHandler;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.PrincipalExtractor;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.UserInfoTokenServices;
@@ -52,7 +54,6 @@ import org.springframework.web.filter.CompositeFilter;
 import org.springframework.web.filter.ForwardedHeaderFilter;
 
 import javax.inject.Inject;
-import javax.servlet.Filter;
 
 import static java.util.stream.Collectors.toList;
 import static org.springframework.boot.autoconfigure.security.SecurityProperties.ACCESS_OVERRIDE_ORDER;
@@ -86,13 +87,34 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                     .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
                     .logoutSuccessHandler(logoutSuccessHandler())
                 .and()
-                    .addFilterBefore(createCompositeSSOFilter(), BasicAuthenticationFilter.class)
+                    .addFilterBefore(createCompositeSSOFilter(thirdPartyLoginProviders()), BasicAuthenticationFilter.class)
                 .requestCache().requestCache(requestCache());
     }
 
     @Bean
     public HttpSessionRequestCache requestCache() {
         return new HttpSessionRequestCache();
+    }
+
+    @Bean
+    public ThirdPartyLoginProviders thirdPartyLoginProviders() {
+        return new ThirdPartyLoginProviders(
+                ixorTalkConfigProperties
+                        .getThirdPartyLogins()
+                        .values()
+                        .stream()
+                        .map(thirdPartyLogin -> new ThirdPartyLoginProvider(
+                                thirdPartyLogin.getClientResource().getClient(),
+                                thirdPartyLogin.getPrincipalExtractorType(),
+                                thirdPartyLogin.getLoginPath(),
+                                new OAuth2RestTemplate(thirdPartyLogin.getClientResource().getClient(), oAuth2ClientContext),
+                                createTokenServices(
+                                        thirdPartyLogin.getPrincipalExtractorType(),
+                                        thirdPartyLogin.getClientResource(),
+                                        new OAuth2RestTemplate(thirdPartyLogin.getClientResource().getClient(), oAuth2ClientContext))
+                        ))
+                        .collect(toList())
+        );
     }
 
     private LogoutSuccessHandler logoutSuccessHandler() {
@@ -102,31 +124,31 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         return logoutSuccessHandler;
     }
 
-    private CompositeFilter createCompositeSSOFilter() {
-        CompositeFilter filter = new CompositeFilter();
-        filter.setFilters(
-                ixorTalkConfigProperties
-                        .getThirdPartyLogins()
-                        .values()
+    private CompositeFilter createCompositeSSOFilter(ThirdPartyLoginProviders thirdPartyLoginProviders) {
+        CompositeFilter compositeFilter = new CompositeFilter();
+        compositeFilter.setFilters(
+                thirdPartyLoginProviders
+                        .getLoginProviders()
                         .stream()
-                        .map(thirdPartyLogin -> ssoFilter(thirdPartyLogin.getPrincipalExtractorType(), thirdPartyLogin.getClientResource(), thirdPartyLogin.getLoginPath()))
+                        .map(thirdPartyLoginProvider -> {
+                            OAuth2ClientAuthenticationProcessingFilter filter = new OAuth2ClientAuthenticationProcessingFilter(thirdPartyLoginProvider.getLoginPath());
+                            filter.setRestTemplate(thirdPartyLoginProvider.getOAuth2RestTemplate());
+                            filter.setTokenServices(thirdPartyLoginProvider.getUserInfoTokenServices());
+                            filter.setApplicationEventPublisher(applicationEventPublisher);
+                            return filter;
+                        })
                         .collect(toList())
         );
-        return filter;
+        return compositeFilter;
     }
 
-    private Filter ssoFilter(LoginProvider principalExtractorType, IxorTalkConfigProperties.ClientResources client, String path) {
-        OAuth2ClientAuthenticationProcessingFilter filter = new OAuth2ClientAuthenticationProcessingFilter(path);
-        OAuth2RestTemplate oAuth2RestTemplate = new OAuth2RestTemplate(client.getClient(), oAuth2ClientContext);
-        filter.setRestTemplate(oAuth2RestTemplate);
+    private UserInfoTokenServices createTokenServices(LoginProvider principalExtractorType, IxorTalkConfigProperties.ClientResources client, OAuth2RestTemplate oAuth2RestTemplate) {
         UserInfoTokenServices tokenServices = new UserInfoTokenServices(
                 client.getResource().getUserInfoUri(),
                 client.getClient().getClientId());
         tokenServices.setRestTemplate(oAuth2RestTemplate);
         tokenServices.setPrincipalExtractor(createPrincipalExtractor(principalExtractorType, oAuth2RestTemplate));
-        filter.setTokenServices(tokenServices);
-        filter.setApplicationEventPublisher(applicationEventPublisher);
-        return filter;
+        return tokenServices;
     }
 
     private PrincipalExtractor createPrincipalExtractor(LoginProvider principalExtractorType, OAuth2RestTemplate userInfoProviderRestTemplate) {
