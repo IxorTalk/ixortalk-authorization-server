@@ -26,12 +26,19 @@ package com.ixortalk.authorization.server.rest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.ixortalk.authorization.server.AbstractSpringIntegrationTest;
 import com.ixortalk.authorization.server.domain.UserProfile;
+import com.ixortalk.authorization.server.rest.FieldDescriptions.UserProfileFields;
 import org.junit.Test;
 
 import static com.ixortalk.authorization.server.domain.AuthorityTestBuilder.authority;
 import static com.jayway.restassured.RestAssured.given;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
+import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.restassured.RestAssuredRestDocumentation.document;
 
 public class UserInfoController_Evict_IntegrationTest extends AbstractSpringIntegrationTest {
 
@@ -41,8 +48,24 @@ public class UserInfoController_Evict_IntegrationTest extends AbstractSpringInte
         String accessToken = getAccessTokenWithAuthorizationCode().getValue();
 
         UserProfile userProfile =
-                given()
+                given(this.restDocSpecification)
                         .auth().preemptive().oauth2(accessToken)
+                        .filter(
+                                document("user/evict",
+                                        preprocessRequest(staticUris(), prettyPrint()),
+                                        preprocessResponse(prettyPrint()),
+                                        requestHeaders(describeAuthorizationTokenHeader()),
+                                        responseFields(
+                                                UserProfileFields.NAME,
+                                                UserProfileFields.EMAIL,
+                                                UserProfileFields.FIRST_NAME,
+                                                UserProfileFields.LAST_NAME,
+                                                UserProfileFields.PROFILE_PICTURE_URL,
+                                                UserProfileFields.AUTHORITIES,
+                                                UserProfileFields.LOGIN_PROVIDER
+                                        )
+                                )
+                        )
                         .when()
                         .get("/user")
                         .then()
