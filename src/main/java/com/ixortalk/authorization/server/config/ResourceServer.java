@@ -36,7 +36,7 @@ public class ResourceServer extends ResourceServerConfigurerAdapter {
     public void configure(HttpSecurity http) throws Exception {
         http
                 .requestMatchers()
-                .antMatchers("/user", "/user-profiles/**")
+                .antMatchers("/user", "/user/evict", "/user-profiles/**")
                 .and()
                 .authorizeRequests()
                 .anyRequest()
