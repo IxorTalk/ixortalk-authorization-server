@@ -29,7 +29,7 @@
 
     <groupId>com.ixortalk</groupId>
     <artifactId>ixortalk-authorization-server</artifactId>
-    <version>0.0.7</version>
+    <version>0.0.8-SNAPSHOT</version>
 
     <name>ixortalk-authorization-server</name>
     <description>IxorTalk microservice for storing users / user profiles</description>
@@ -89,7 +89,7 @@
         <connection>scm:git:git@github.com:ixortalk/ixortalk-authorization-server.git</connection>
         <developerConnection>scm:git:git@github.com:ixortalk/ixortalk-authorization-server.git</developerConnection>
         <url>https://github.com/ixortalk/ixortalk-authorization-server/tree/master</url>
-        <tag>ixortalk-authorization-server-0.0.7</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <distributionManagement>
