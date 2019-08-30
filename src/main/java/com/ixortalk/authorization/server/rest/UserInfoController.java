@@ -24,10 +24,13 @@
 package com.ixortalk.authorization.server.rest;
 
 import com.ixortalk.authorization.server.security.thirdparty.ThirdPartyProfileService;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -37,6 +40,7 @@ import java.security.Principal;
 import static org.springframework.http.ResponseEntity.ok;
 
 @RestController
+@RequestMapping("/user")
 public class UserInfoController {
 
     public static final String USER_INFO_CACHE_NAME = "userInfoCache";
@@ -47,7 +51,7 @@ public class UserInfoController {
     @Inject
     private ThirdPartyProfileService thirdPartyProfileService;
 
-    @RequestMapping("/user")
+    @GetMapping
     @Cacheable(cacheNames = USER_INFO_CACHE_NAME, sync = true, key = "#principal.name")
     public Object user(Principal principal) {
         if (thirdPartyOAuth2Authentication(principal)) {
@@ -57,6 +61,12 @@ public class UserInfoController {
         return userProfileRestResource.findByEmail(principal.getName())
                 .<ResponseEntity<?>>map(ResponseEntity::ok)
                 .orElse(ok(principal));
+    }
+
+    @PostMapping("/evict")
+    @CacheEvict(cacheNames = USER_INFO_CACHE_NAME, key = "#principal.name")
+    public Object evict(Principal principal) {
+        return user(principal);
     }
 
     private boolean thirdPartyOAuth2Authentication(Principal principal) {

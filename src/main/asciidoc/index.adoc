@@ -32,3 +32,50 @@ include::{snippets}/user-profiles/get-all/as-admin/http-response.adoc[]
 With user (or other non admin) privileges
 
 include::{snippets}/user-profiles/get-all/as-user/http-response.adoc[]
+
+= User Info
+
+== Get User Info
+
+Gets the user info (being used as OAuth2 user info URI)
+
+=== Request
+
+Via curl:
+include::{snippets}/user/get/curl-request.adoc[]
+
+HTTP request:
+include::{snippets}/user/get/http-request.adoc[]
+
+==== Request Headers
+include::{snippets}/user/get/request-headers.adoc[]
+
+=== Response
+
+include::{snippets}/user/get/http-response.adoc[]
+
+include::{snippets}/user/get/response-fields.adoc[]
+
+
+== Evict User Info Cache
+
+The user info is cached for a relatively short amount of time.  However, by using the REST call below, it is possible to evict the currently cached user info (eg. after the third party profile has been updated).
+
+=== Request
+
+Via curl:
+include::{snippets}/user/evict/curl-request.adoc[]
+
+HTTP request:
+include::{snippets}/user/evict/http-request.adoc[]
+
+==== Request Headers
+include::{snippets}/user/evict/request-headers.adoc[]
+
+=== Response
+
+The newly created user info is returned.
+
+include::{snippets}/user/evict/http-response.adoc[]
+
+include::{snippets}/user/evict/response-fields.adoc[]

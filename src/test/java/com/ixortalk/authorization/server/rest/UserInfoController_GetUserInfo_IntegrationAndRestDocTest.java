@@ -26,6 +26,7 @@ package com.ixortalk.authorization.server.rest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.ixortalk.authorization.server.AbstractSpringIntegrationTest;
 import com.ixortalk.authorization.server.domain.UserProfile;
+import com.ixortalk.authorization.server.rest.FieldDescriptions.UserProfileFields;
 import org.junit.Test;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
@@ -51,21 +52,40 @@ import static java.lang.System.currentTimeMillis;
 import static java.lang.Thread.sleep;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static java.net.HttpURLConnection.HTTP_UNAUTHORIZED;
-import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
+import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.restassured.RestAssuredRestDocumentation.document;
 
-public class UserInfoControllerIntegrationTest extends AbstractSpringIntegrationTest {
+public class UserInfoController_GetUserInfo_IntegrationAndRestDocTest extends AbstractSpringIntegrationTest {
 
-    private static final String UPDATED_FIRST_NAME = "updatedFirstName";
-    private static final String UPDATED_ROLE = "ROLE_UPDATED";
     private static final String REFRESHED_ACCESS_TOKEN = "refreshedAccessToken";
 
     @Test
     public void getUserInfo_NoProfileExists() {
         UserProfile userProfile =
-                given()
+                given(this.restDocSpecification)
                         .auth().preemptive().oauth2(getAccessTokenWithAuthorizationCode().getValue())
                         .when()
+                        .filter(
+                                document("user/get",
+                                        preprocessRequest(staticUris(), prettyPrint()),
+                                        preprocessResponse(prettyPrint()),
+                                        requestHeaders(describeAuthorizationTokenHeader()),
+                                        responseFields(
+                                                UserProfileFields.NAME,
+                                                UserProfileFields.EMAIL,
+                                                UserProfileFields.FIRST_NAME,
+                                                UserProfileFields.LAST_NAME,
+                                                UserProfileFields.PROFILE_PICTURE_URL,
+                                                UserProfileFields.AUTHORITIES,
+                                                UserProfileFields.LOGIN_PROVIDER
+                                        )
+                                )
+                        )
                         .get("/user")
                         .then()
                         .statusCode(HTTP_OK)
@@ -134,7 +154,8 @@ public class UserInfoControllerIntegrationTest extends AbstractSpringIntegration
                 .then()
                 .statusCode(HTTP_OK);
 
-        updateThirdPartyUserInfoAndInvalidateCache();
+        updateThirdPartyUserInfo();
+        clearCaches();
 
         UserProfile userProfile =
                 given()
@@ -166,7 +187,8 @@ public class UserInfoControllerIntegrationTest extends AbstractSpringIntegration
         assertThat(userProfile.getFirstName()).isEqualTo(FIRST_NAME_IXORTALK_PRINCIPAL);
         assertThat(userProfile.getAuthorities()).containsOnly(authority(ROLE_IXORTALK_ROLE_1), authority(ROLE_IXORTALK_ROLE_2));
 
-        updateThirdPartyUserInfoAndInvalidateCache();
+        updateThirdPartyUserInfo();
+        clearCaches();
 
         userProfile =
                 given()
@@ -193,7 +215,8 @@ public class UserInfoControllerIntegrationTest extends AbstractSpringIntegration
                 .statusCode(HTTP_OK);
 
         expirePersistedThirdPartyAccessToken();
-        updateThirdPartyUserInfoAndInvalidateCache();
+        updateThirdPartyUserInfo();
+        clearCaches();
 
         thirdPartyIxorTalkWireMockRule.stubFor(
                 post(urlEqualTo("/oauth/token"))
@@ -301,14 +324,5 @@ public class UserInfoControllerIntegrationTest extends AbstractSpringIntegration
         OAuth2Authentication thirdPartyOAuth2Authentication = thirdPartyTokenStore.readAuthentication(thirdPartyOAuth2AccessToken);
         ((DefaultOAuth2AccessToken) thirdPartyOAuth2AccessToken).setExpiration(new Date(currentTimeMillis() - 1));
         thirdPartyTokenStore.storeAccessToken(thirdPartyOAuth2AccessToken, thirdPartyOAuth2Authentication);
-    }
-
-    private void updateThirdPartyUserInfoAndInvalidateCache() throws JsonProcessingException {
-        userInfoIxorTalk.put("firstName", UPDATED_FIRST_NAME);
-        thirdPartyPrincipalIxorTalk.put("authorities", newArrayList(singletonMap("name", UPDATED_ROLE)));
-        thirdPartyPrincipalIxorTalk.put("userInfo", userInfoIxorTalk);
-        stubThirdPartyUserInfo(thirdPartyIxorTalkWireMockRule, thirdPartyPrincipalIxorTalk);
-
-        clearCaches();
     }
 }

@@ -108,6 +108,8 @@ public abstract class AbstractSpringIntegrationTest {
     protected static final String LAST_NAME_IXORTALK_PRINCIPAL = nextString("lastName");
 
     protected static final String PRINCIPAL_NAME_EVENTBRITE = nextString("principalNameEventbrite");
+    protected static final String UPDATED_FIRST_NAME = "updatedFirstName";
+    protected static final String UPDATED_ROLE = "ROLE_UPDATED";
     private static final String FIRST_NAME_EVENTBRITE_PRINCIPAL = nextString("first_name_eventbrite");
     private static final String LAST_NAME_EVENTBRITE_PRINCIPAL = nextString("last_name_eventbrite");
     protected static final String PROFILE_PICTURE_URL_IXORTALK_PRINCIPAL = nextString("profilePictureUrl");
@@ -164,6 +166,7 @@ public abstract class AbstractSpringIntegrationTest {
     protected String contextPath;
 
     protected RequestSpecification restDocSpecification;
+
     protected Map<String, Object> userInfoIxorTalk;
 
     private static String extractAuthorizationCodeFromRedirect(String location) throws URISyntaxException {
@@ -350,4 +353,10 @@ public abstract class AbstractSpringIntegrationTest {
         return headerWithName("Authorization").description("The bearer token needed to authorize this request.");
     }
 
+    protected void updateThirdPartyUserInfo() throws JsonProcessingException {
+        userInfoIxorTalk.put("firstName", UPDATED_FIRST_NAME);
+        thirdPartyPrincipalIxorTalk.put("authorities", newArrayList(singletonMap("name", UPDATED_ROLE)));
+        thirdPartyPrincipalIxorTalk.put("userInfo", userInfoIxorTalk);
+        stubThirdPartyUserInfo(thirdPartyIxorTalkWireMockRule, thirdPartyPrincipalIxorTalk);
+    }
 }
