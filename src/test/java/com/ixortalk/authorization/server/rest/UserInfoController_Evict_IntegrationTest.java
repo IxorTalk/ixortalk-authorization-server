@@ -48,6 +48,20 @@ public class UserInfoController_Evict_IntegrationTest extends AbstractSpringInte
         String accessToken = getAccessTokenWithAuthorizationCode().getValue();
 
         UserProfile userProfile =
+                given()
+                        .auth().preemptive().oauth2(accessToken)
+                        .when()
+                        .get("/user")
+                        .then()
+                        .statusCode(HTTP_OK)
+                        .extract().as(UserProfile.class);
+
+        assertThat(userProfile.getFirstName()).isEqualTo(FIRST_NAME_IXORTALK_PRINCIPAL);
+        assertThat(userProfile.getAuthorities()).containsOnly(authority(ROLE_IXORTALK_ROLE_1), authority(ROLE_IXORTALK_ROLE_2));
+
+        updateThirdPartyUserInfo();
+
+        userProfile =
                 given(this.restDocSpecification)
                         .auth().preemptive().oauth2(accessToken)
                         .filter(
@@ -66,20 +80,6 @@ public class UserInfoController_Evict_IntegrationTest extends AbstractSpringInte
                                         )
                                 )
                         )
-                        .when()
-                        .get("/user")
-                        .then()
-                        .statusCode(HTTP_OK)
-                        .extract().as(UserProfile.class);
-
-        assertThat(userProfile.getFirstName()).isEqualTo(FIRST_NAME_IXORTALK_PRINCIPAL);
-        assertThat(userProfile.getAuthorities()).containsOnly(authority(ROLE_IXORTALK_ROLE_1), authority(ROLE_IXORTALK_ROLE_2));
-
-        updateThirdPartyUserInfo();
-
-        userProfile =
-                given()
-                        .auth().preemptive().oauth2(accessToken)
                         .when()
                         .post("/user/evict")
                         .then()
