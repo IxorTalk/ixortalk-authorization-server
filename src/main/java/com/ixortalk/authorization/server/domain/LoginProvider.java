@@ -102,6 +102,33 @@ public enum LoginProvider {
         public Object getUserInfo(Map<String, Object> map) {
             return map;
         }
+    },
+
+    SALTO {
+        @Override
+        public String getPrincipalName(Map<String, Object> map) {
+            return (String) map.get("email");
+        }
+
+        @Override
+        public String getFirstName(Map<String, Object> map) {
+            return (String) map.get("first_name");
+        }
+
+        @Override
+        public String getLastName(Map<String, Object> map) {
+            return (String) map.get("last_name");
+        }
+
+        @Override
+        public String getProfilePictureUrl(Map<String, Object> map, OAuth2RestTemplate userInfoProviderRestTemplate) {
+            return (String) map.get("image_url");
+        }
+
+        @Override
+        public Object getUserInfo(Map<String, Object> map) {
+            return map;
+        }
     };
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LoginProvider.class);
