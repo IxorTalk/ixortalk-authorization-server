@@ -29,6 +29,7 @@ import org.junit.Test;
 
 import static com.ixortalk.authorization.server.TestConfigConstants.THIRD_PARTY_LOGIN_EVENTBRITE;
 import static com.ixortalk.authorization.server.TestConfigConstants.THIRD_PARTY_LOGIN_IXORTALK;
+import static com.ixortalk.authorization.server.TestConfigConstants.THIRD_PARTY_LOGIN_SALTO;
 import static com.ixortalk.authorization.server.domain.AuthorityTestBuilder.authority;
 import static com.ixortalk.authorization.server.domain.LoginProvider.IXORTALK;
 import static com.ixortalk.authorization.server.domain.UserProfileTestBuilder.aUserProfile;
@@ -85,6 +86,23 @@ public class LoginIntegrationTest extends AbstractSpringIntegrationTest {
                         .extract().asString();
 
         assertThat(response).isEqualTo("hello " + PRINCIPAL_NAME_EVENTBRITE);
+    }
+
+    @Test
+    public void login_withSalto() {
+
+        given()
+                .filter(sessionFilter)
+                .when()
+                .get("/hello");
+
+        String response =
+                performOAuth2Login(THIRD_PARTY_LOGIN_SALTO)
+                        .then()
+                        .statusCode(HTTP_OK)
+                        .extract().asString();
+
+        assertThat(response).isEqualTo("hello " + PRINCIPAL_NAME_SALTO);
     }
 
     @Test

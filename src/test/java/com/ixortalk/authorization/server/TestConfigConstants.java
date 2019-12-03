@@ -35,6 +35,7 @@ public enum TestConfigConstants {
 
     THIRD_PARTY_LOGIN_IXORTALK("third-party-ixortalk"),
     THIRD_PARTY_LOGIN_EVENTBRITE("third-party-eventbrite"),
+    THIRD_PARTY_LOGIN_SALTO("third-party-salto"),
 
     THIRD_PARTY_LOGIN_IXORTALK_CLIENT_ID("third-party-ixortalk-client-id");
 

@@ -33,6 +33,8 @@ wiremock:
     port: 65101
   third-party-eventbrite:
     port: 65102
+  third-party-salto:
+    port: 65103
 
 spring:
   jpa:
@@ -89,4 +91,16 @@ ixortalk:
           user-authorization-uri: http://localhost:${wiremock.third-party-eventbrite.port}/oauth/authorize
           client-id: third-party-eventbrite-client-id
           client-secret: third-party-eventbrite-client-secret
+          grant-type: authorization_code
+    third-party-salto:
+      login-path: /login/third-party-salto
+      principal-extractor-type: salto
+      client-resource:
+        resource:
+          user-info-uri: http://localhost:${wiremock.third-party-salto.port}/user-info
+        client:
+          access-token-uri: http://localhost:${wiremock.third-party-salto.port}/oauth/token
+          user-authorization-uri: http://localhost:${wiremock.third-party-salto.port}/oauth/authorize
+          client-id: third-party-salto-client-id
+          client-secret: third-party-salto-client-secret
           grant-type: authorization_code

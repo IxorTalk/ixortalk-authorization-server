@@ -108,10 +108,15 @@ public abstract class AbstractSpringIntegrationTest {
     protected static final String LAST_NAME_IXORTALK_PRINCIPAL = nextString("lastName");
 
     protected static final String PRINCIPAL_NAME_EVENTBRITE = nextString("principalNameEventbrite");
-    protected static final String UPDATED_FIRST_NAME = "updatedFirstName";
-    protected static final String UPDATED_ROLE = "ROLE_UPDATED";
     private static final String FIRST_NAME_EVENTBRITE_PRINCIPAL = nextString("first_name_eventbrite");
     private static final String LAST_NAME_EVENTBRITE_PRINCIPAL = nextString("last_name_eventbrite");
+
+    protected static final String PRINCIPAL_NAME_SALTO = nextString("principalNameSalto");
+    private static final String FIRST_NAME_SALTO_PRINCIPAL = nextString("first_name_salto");
+    private static final String LAST_NAME_SALTO_PRINCIPAL = nextString("last_name_salto");
+
+    protected static final String UPDATED_FIRST_NAME = "updatedFirstName";
+    protected static final String UPDATED_ROLE = "ROLE_UPDATED";
     protected static final String PROFILE_PICTURE_URL_IXORTALK_PRINCIPAL = nextString("profilePictureUrl");
     protected static final String ROLE_IXORTALK_ROLE_1 = "ROLE_IXORTALK_ROLE_1";
     protected static final String ROLE_IXORTALK_ROLE_2 = "ROLE_IXORTALK_ROLE_2";
@@ -135,9 +140,13 @@ public abstract class AbstractSpringIntegrationTest {
             options()
                     .port(65102)
                     .extensions(new ResponseTemplateTransformer(false)));
+    @Rule
+    public WireMockRule thirdPartySaltoWireMockRule = new WireMockRule(
+            options()
+                    .port(65103)
+                    .extensions(new ResponseTemplateTransformer(false)));
 
-    protected Map<String, Object> thirdPartyPrincipalIxorTalk;
-    private Map<String, Object> thirdPartyPrincipalEventbrite;
+    private Map<String, Object> thirdPartyPrincipalIxorTalk, thirdPartyPrincipalEventbrite, thirdPartyPrincipalSalto;
 
     protected SessionFilter sessionFilter;
 
@@ -208,12 +217,19 @@ public abstract class AbstractSpringIntegrationTest {
         thirdPartyPrincipalEventbrite.put("first_name", FIRST_NAME_EVENTBRITE_PRINCIPAL);
         thirdPartyPrincipalEventbrite.put("last_name", LAST_NAME_EVENTBRITE_PRINCIPAL);
 
+        thirdPartyPrincipalSalto = newHashMap();
+        thirdPartyPrincipalSalto.put("email", PRINCIPAL_NAME_SALTO);
+        thirdPartyPrincipalSalto.put("first_name", FIRST_NAME_SALTO_PRINCIPAL);
+        thirdPartyPrincipalSalto.put("last_name", LAST_NAME_SALTO_PRINCIPAL);
 
         stubThirdPartyOAuth2Login(thirdPartyIxorTalkWireMockRule, createOAuth2AccessToken(IXORTALK_THIRD_PARTY_ACCESS_TOKEN, IXORTALK_THIRD_PARTY_REFRESH_TOKEN));
         stubThirdPartyUserInfo(thirdPartyIxorTalkWireMockRule, thirdPartyPrincipalIxorTalk);
 
         stubThirdPartyOAuth2Login(thirdPartyEventbriteWireMockRule, createOAuth2AccessToken(nextString("eventbrite-thirdparty-access-token"), nextString("eventbrite-thirdparty-refresh-token")));
         stubThirdPartyUserInfo(thirdPartyEventbriteWireMockRule, thirdPartyPrincipalEventbrite);
+
+        stubThirdPartyOAuth2Login(thirdPartySaltoWireMockRule, createOAuth2AccessToken(nextString("salto-thirdparty-access-token"), nextString("salto-thirdparty-refresh-token")));
+        stubThirdPartyUserInfo(thirdPartySaltoWireMockRule, thirdPartyPrincipalSalto);
     }
 
     protected String getLocalURL() {
